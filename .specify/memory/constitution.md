@@ -1,6 +1,29 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.0.0 → 2.1.0 (MINOR: Added cross-team dependency requirement to specification discovery)
+
+Modified principles:
+- Principle X: Added REQUIRED cross-team dependency identification during /speckit.specify
+  - New "Cross-Team Dependencies" section format for specs
+  - Dependency types: Capacity, Integration, Design, Testing, Informational
+  - Agent must proactively identify dependencies even if user doesn't mention them
+  - Common triggers documented for automatic dependency detection
+
+Rationale:
+- Cross-team dependencies were only surfaced during planning, causing late discovery
+- Moving identification to specification phase enables earlier coordination
+- Proactive detection ensures dependencies aren't missed when user forgets to mention them
+
+Templates requiring updates:
+- spec-template.md: ⚠ Should add Cross-Team Dependencies section placeholder
+
+Follow-up TODOs:
+- Update spec-template.md with Cross-Team Dependencies section
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.0.0)
+===================================
 Version change: 1.8.1 → 2.0.0 (MAJOR: Consolidated principles, revised personas, updated epic model)
 
 Modified principles:
@@ -26,13 +49,6 @@ Rationale:
 - Cross-team coordination improved with dedicated requirements section and inline callouts
 - Team briefs removed since Crimson is primary consumer and distributes as needed
 - Added Open Questions export for async PM collaboration
-
-Templates requiring updates:
-- plan-template.md: ⚠ Review for team brief references (none found)
-- spec-template.md: ✅ Already aligned with epic structure
-- tasks-template.md: ✅ Already aligned with user story organization
-
-Follow-up TODOs: None
 ==================
 -->
 
@@ -357,6 +373,30 @@ Before writing any feature specification, the agent MUST conduct a structured di
 - Edge cases: What unusual scenarios should be considered?
 - Visual/UX references: Are there prototypes, mockups, or reference designs?
 
+**Cross-team dependency identification (REQUIRED):**
+
+Specifications MUST include a "Cross-Team Dependencies" section identifying all teams that may be impacted by or need to contribute to the feature. This section MUST be populated during `/speckit.specify`, not deferred to planning.
+
+For each dependency, identify:
+- **Team**: Which team is involved (reference OWNERS files per Principle VIII)
+- **Requirement**: What is needed from them
+- **Type**: Capacity | Integration | Design | Testing | Informational
+- **Notes**: Additional context (blocking vs. FYI, timeline sensitivity)
+
+Dependency types:
+- **Capacity**: Team needs awareness of changed load/volume patterns
+- **Integration**: Feature requires API, contract, or integration point with team's domain
+- **Design**: UX/design work needed from team
+- **Testing**: QE involvement for test coverage
+- **Informational**: FYI for awareness, no action required
+
+The agent MUST proactively identify cross-team dependencies based on the feature description, even if the user does not explicitly mention them. Common triggers:
+- Multiple models/MCPs/guardrails → Model Serving, MCP, Guardrails teams
+- New UI patterns or layouts → UX Team
+- Changed API contracts → Backend/Platform team
+- New user flows or edge cases → QE Team
+- Data persistence or state changes → relevant data-owning team
+
 **Question flow principles:**
 - Start with scope and relationship to existing work
 - Move to user impact and personas
@@ -612,4 +652,4 @@ This constitution supersedes all other development practices. Amendments require
 - MINOR version: New principles or materially expanded guidance
 - PATCH version: Clarifications, wording improvements, typo fixes
 
-**Version**: 2.0.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-21
+**Version**: 2.1.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-21
