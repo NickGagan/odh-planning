@@ -164,6 +164,28 @@ Enable users to export comparison sessions including chat results and configurat
 - **SC-006**: Switching between synchronized and independent prompt modes preserves all existing chat history
 - **SC-007**: Individual pane failures (model errors, timeouts) do not disrupt other active panes
 
+## Cross-Team Dependencies
+
+| Team | Requirement | Type | Notes |
+|------|-------------|------|-------|
+| **Model Serving** | Support concurrent model inference requests from multiple panes | Capacity | Load patterns change—single user may hit 4 models simultaneously |
+| **MCP Team** | Per-pane MCP server connections | Integration | Each pane may connect to different MCP servers; concurrent tool calls expected |
+| **Guardrails Team** | Per-request guardrail configuration | Integration | Confirm guardrails can be toggled independently per request context (not session-wide) |
+| **Knowledge Team** | Per-pane RAG source attachment | Integration | Multiple knowledge source connections active in one session |
+| **UX Team** | Multi-pane layout design | Design | Side-by-side layout, prompt mode toggle, config cloning, metrics display, responsive behavior |
+| **QE Team** | Expanded test coverage | Testing | Combinatorial testing across pane configs, sync modes, concurrent responses, edge cases |
+| **Platform/Backend** | Permissions integration | Integration | Existing authZ must work for per-pane resource access validation |
+
+### Blocking Dependencies
+
+- **UX Team**: Layout designs needed before UI implementation can begin
+- **Guardrails Team**: Must confirm per-request guardrail toggle is feasible (vs. session-level only)
+
+### Informational (Capacity/Awareness)
+
+- **Model Serving**: FYI on changed load patterns (4x concurrent requests per user possible)
+- **QE Team**: Test matrix expansion—early awareness for capacity planning
+
 ## Clarifications
 
 ### Session 2026-01-21
