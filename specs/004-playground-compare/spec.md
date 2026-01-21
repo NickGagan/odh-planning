@@ -5,7 +5,7 @@
 **Status**: Draft  
 **Input**: User description: "Multi-instance comparison experience in Playground for comparing models, prompts, MCP servers, guardrails, and knowledge sources side-by-side"
 
-## Epics & User Stories *(mandatory)*
+## Epics *(mandatory)*
 
 ### Epic 1: Multi-Pane Playground Interface (Priority: P1)
 
@@ -13,19 +13,21 @@ Enable users to create and manage multiple chat instances within a single Playgr
 
 **User Value**: Users can spin up multiple chat environments simultaneously without switching contexts or opening separate windows, dramatically accelerating experimentation.
 
-**User Stories**:
+**Technical Considerations**:
+- Pane state must be managed at the parent container level; each pane instance is isolated
+- Layout must handle dynamic pane count (2-4) without re-rendering sibling panes
+- Hidden panes must preserve full state (config + history) without consuming active resources
 
-- **Story 1.1**: As an AI engineer, I want to add multiple chat panes to my Playground so that I can compare different configurations simultaneously.
-- **Story 1.2**: As a platform user, I want to toggle individual panes on or off so that I can focus on specific comparisons without losing my other configurations.
-- **Story 1.3**: As an AI engineer, I want to view all active panes side-by-side so that I can directly compare outputs visually.
-- **Story 1.4**: As a platform user, I want to resize or rearrange panes so that I can optimize my workspace for different comparison tasks.
+**Outcomes by Persona**:
 
-**Acceptance Criteria**:
+_AI Engineer_:
+- Add up to 4 chat panes within a single Playground session
+- View all active panes side-by-side for direct visual comparison
+- Resize or rearrange panes to optimize workspace for different comparison tasks
 
-1. **Given** a user is in the Playground, **When** they request a new pane, **Then** a new chat instance appears alongside existing panes.
-2. **Given** multiple panes are open, **When** the user toggles a pane off, **Then** the pane is hidden but its configuration is preserved.
-3. **Given** a hidden pane exists, **When** the user toggles it back on, **Then** the pane reappears with its previous configuration and chat history intact.
-4. **Given** 2-4 panes are visible, **When** the user views the Playground, **Then** all panes are displayed side-by-side with adequate space for comparison.
+_Platform User_:
+- Toggle individual panes on/off without losing configuration or chat history
+- Hidden panes restore with full state intact when toggled back on
 
 ---
 
@@ -35,21 +37,22 @@ Allow each chat pane to be independently configured with its own model, MCP serv
 
 **User Value**: Users can test different combinations of AI configurations in isolation, enabling precise A/B testing and systematic evaluation of each variable.
 
-**User Stories**:
+**Technical Considerations**:
+- Configuration state must be fully isolated per pane; changes must not trigger re-renders in siblings
+- Clone operation must deep-copy configuration without shared references
+- Permission checks must occur per-pane at configuration time (not just at request time)
 
-- **Story 2.1**: As an AI engineer, I want to select a different model for each pane so that I can benchmark Granite, Llama-3, and Claude on identical prompts.
-- **Story 2.2**: As a platform user, I want to connect different MCP servers to each pane so that I can evaluate GitHub vs. Jira tool integrations.
-- **Story 2.3**: As an AI engineer, I want to attach different knowledge sources to each pane so that I can compare outputs based on different document sets.
-- **Story 2.4**: As a platform user, I want to enable or disable guardrails per pane so that I can assess safety guardrail effectiveness on the same input.
-- **Story 2.5**: As an AI engineer, I want to clone an existing pane's configuration to a new pane so that I can quickly set up A/B comparisons by modifying just one variable.
+**Outcomes by Persona**:
 
-**Acceptance Criteria**:
+_AI Engineer_:
+- Select a different model for each pane to benchmark (e.g., Granite vs. Llama-3 vs. Claude)
+- Attach different knowledge sources per pane to compare RAG outputs
+- Clone an existing pane's configuration to quickly set up A/B comparisons
 
-1. **Given** a user is configuring a pane, **When** they select a model, **Then** only that pane uses the selected model while others remain unchanged.
-2. **Given** multiple panes exist, **When** the user enables an MCP server on one pane, **Then** other panes are not affected by that configuration.
-3. **Given** a pane has a knowledge source attached, **When** another pane is configured, **Then** each pane's knowledge source selection remains independent.
-4. **Given** guardrails are enabled on one pane, **When** another pane has guardrails disabled, **Then** each pane processes inputs according to its own guardrail settings.
-5. **Given** a configured pane exists, **When** the user clones it, **Then** a new pane is created with identical configuration settings (model, MCPs, knowledge sources, guardrails).
+_Platform User_:
+- Connect different MCP servers to each pane (e.g., GitHub vs. Jira)
+- Enable or disable guardrails independently per pane
+- Only see resources (models, MCPs, knowledge) they have permission to access
 
 ---
 
@@ -59,56 +62,55 @@ Provide flexible prompt entry modes that support both synchronized prompting acr
 
 **User Value**: Users can efficiently run the same prompt across all configurations for direct comparison, or craft unique prompts per pane for more nuanced testing scenarios.
 
-**User Stories**:
+**Technical Considerations**:
+- Synchronized mode must dispatch to all visible panes simultaneously; streaming responses must be non-blocking across panes
+- Mode switching must preserve existing conversation history in all panes
+- Each pane must maintain independent conversation context regardless of prompt mode
 
-- **Story 3.1**: As an AI engineer, I want to enter a prompt once and run it across all panes simultaneously so that I can compare model responses to identical input.
-- **Story 3.2**: As a platform user, I want to edit prompts independently in each pane so that I can test prompt variations against the same model.
-- **Story 3.3**: As an AI engineer, I want to switch between synchronized and independent prompt modes so that I can adapt my workflow to different testing needs.
+**Outcomes by Persona**:
 
-**Acceptance Criteria**:
+_AI Engineer_:
+- Enter a prompt once and run it across all panes simultaneously
+- Switch between synchronized and independent modes without losing chat history
+- Compare model responses to identical input in synchronized mode
 
-1. **Given** synchronized mode is active, **When** the user submits a prompt, **Then** all visible panes receive and process the same prompt simultaneously.
-2. **Given** independent mode is active, **When** the user edits a prompt in one pane, **Then** other panes maintain their own prompt text.
-3. **Given** synchronized mode is active, **When** the user switches to independent mode, **Then** each pane retains its current conversation and allows independent edits going forward.
-4. **Given** prompts have been executed, **When** the user switches between modes, **Then** existing chat history in each pane is preserved.
+_Platform User_:
+- Edit prompts independently in each pane when in independent mode
+- Test prompt variations against the same model configuration
 
 ---
 
 ### Epic 4: Comparison Analytics (Priority: P2)
 
-Display runtime metrics and performance data inline with each pane's output, enabling quantitative comparison alongside qualitative response evaluation.
+Display runtime metrics and performance data inline with each pane's output for quantitative comparison.
 
-**User Value**: Users can assess not just response quality but also performance characteristics like latency and token usage, informing both quality and efficiency decisions.
+**User Value**: Users can assess performance characteristics like latency and token usage alongside response quality.
 
-**User Stories**:
+**Outcomes by Persona**:
 
-- **Story 4.1**: As an AI engineer, I want to see response latency displayed under each pane so that I can compare model speed.
-- **Story 4.2**: As a platform user, I want to see token counts for each response so that I can evaluate cost implications across models.
-- **Story 4.3**: As an AI engineer, I want to view additional runtime metrics so that I can make informed decisions about model selection.
+_AI Engineer_:
+- See response latency displayed under each pane for speed comparison
+- View token counts (input/output) to evaluate cost implications
 
-**Acceptance Criteria**:
-
-1. **Given** a response is generated, **When** the output appears, **Then** latency information is displayed inline below the response.
-2. **Given** a response is generated, **When** the output appears, **Then** token usage (input and output tokens) is displayed inline below the response.
-3. **Given** multiple panes have responses, **When** the user views the comparison, **Then** metrics are consistently positioned across all panes for easy scanning.
+_Platform User_:
+- Metrics consistently positioned across all panes for easy scanning
 
 ---
 
 ### Epic 5: Export (Priority: P2)
 
-Enable users to export comparison sessions including chat results and configurations for offline review and future reference.
+Enable users to export comparison sessions including chat results and configurations for offline review.
 
-**User Value**: Users can save and share their comparison work for offline review, documentation, or team collaboration, preserving valuable experimentation results.
+**User Value**: Users can save and share comparison work for offline review or team collaboration.
 
-**User Stories**:
+**Outcomes by Persona**:
 
-- **Story 5.1**: As an AI engineer, I want to export all chat results from my comparison session so that I can review outputs offline or share with colleagues.
-- **Story 5.2**: As a platform user, I want to export the configuration of each pane so that I can recreate comparison setups later.
+_AI Engineer_:
+- Export all chat results from comparison session for offline review
+- Share exported results with colleagues
 
-**Acceptance Criteria**:
-
-1. **Given** a comparison session is active, **When** the user requests an export, **Then** chat content from all panes is included in the export.
-2. **Given** a comparison session is active, **When** the user requests an export, **Then** each pane's configuration (model, MCPs, knowledge sources, guardrails) is included.
+_Platform User_:
+- Export pane configurations to recreate comparison setups later
 
 ---
 
@@ -121,30 +123,24 @@ Enable users to export comparison sessions including chat results and configurat
 - What happens if an MCP server times out for one pane? The affected pane should display an error while other panes continue operating normally.
 - What happens if the user navigates away or refreshes mid-session? Session is lost; user should be warned before destructive navigation if unsaved work exists.
 
-## Requirements *(mandatory)*
+## Performance & Scaling
 
-### Functional Requirements
+| Concern | Impact | Consideration |
+|---------|--------|---------------|
+| **Client Memory** | 4 concurrent panes increase browser memory footprint | Each pane maintains independent state, conversation history, and streaming buffer |
+| **API Throughput** | Single user may generate 4x concurrent inference requests | Model Serving team should be aware of changed load patterns per user |
+| **Perceived Latency** | In sync mode, slowest pane determines perceived completion | Responses should stream independently; UI should not block on slowest |
+| **MCP Connections** | Up to 4 concurrent MCP server connections per session | Connection pooling or limits may be needed at platform level |
+| **Degradation** | One slow/failed pane must not affect others | Error isolation and independent streaming are critical |
 
-- **FR-001**: System MUST allow users to create multiple chat panes within a single Playground session *(Epic 1)*
-- **FR-002**: System MUST support a minimum of 2 and a maximum of 4 visible panes simultaneously *(Epic 1)*
-- **FR-003**: System MUST provide controls to toggle individual panes on/off while preserving their state *(Epic 1)*
-- **FR-004**: System MUST display active panes in a side-by-side layout for direct comparison *(Epic 1)*
-- **FR-005**: System MUST allow independent model selection for each pane *(Epic 2)*
-- **FR-006**: System MUST allow independent MCP server configuration for each pane *(Epic 2)*
-- **FR-007**: System MUST allow independent knowledge source attachment for each pane *(Epic 2)*
-- **FR-008**: System MUST allow independent guardrail configuration for each pane *(Epic 2)*
-- **FR-009**: System MUST ensure complete configuration isolation between panes *(Epic 2)*
-- **FR-010**: System MUST allow users to clone an existing pane's configuration to a new pane *(Epic 2)*
-- **FR-011**: System MUST provide a synchronized prompt mode where one input runs across all visible panes *(Epic 3)*
-- **FR-012**: System MUST provide an independent prompt mode where each pane has its own editable prompt *(Epic 3)*
-- **FR-013**: System MUST allow users to switch between synchronized and independent prompt modes *(Epic 3)*
-- **FR-014**: System MUST display response latency inline with each pane's output *(Epic 4)*
-- **FR-015**: System MUST display token usage (input/output) inline with each pane's output *(Epic 4)*
-- **FR-016**: System MUST support export of chat results from all panes *(Epic 5)*
-- **FR-017**: System MUST support export of pane configurations *(Epic 5)*
-- **FR-018**: System MUST respect existing platform permissions—users can only configure panes with models, MCPs, and knowledge sources they are authorized to access *(Epic 2)*
+## System Constraints
 
-### Key Entities
+- Maximum 4 panes simultaneously (performance constraint)
+- Sessions are ephemeral—no persistence across page refresh
+- Users can only access models, MCPs, and knowledge sources they have platform permissions for
+- Default prompt mode is synchronized; can be switched to independent
+
+## Key Entities
 
 - **Comparison Session**: A Playground session containing multiple panes; tracks session-level state including prompt mode and pane arrangement
 - **Pane**: An individual chat instance within a comparison session; contains its own configuration, conversation history, and display state
