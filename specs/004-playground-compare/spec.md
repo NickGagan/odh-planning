@@ -41,6 +41,7 @@ Allow each chat pane to be independently configured with its own model, MCP serv
 - **Story 2.2**: As a platform user, I want to connect different MCP servers to each pane so that I can evaluate GitHub vs. Jira tool integrations.
 - **Story 2.3**: As an AI engineer, I want to attach different knowledge sources to each pane so that I can compare outputs based on different document sets.
 - **Story 2.4**: As a platform user, I want to enable or disable guardrails per pane so that I can assess safety guardrail effectiveness on the same input.
+- **Story 2.5**: As an AI engineer, I want to clone an existing pane's configuration to a new pane so that I can quickly set up A/B comparisons by modifying just one variable.
 
 **Acceptance Criteria**:
 
@@ -48,6 +49,7 @@ Allow each chat pane to be independently configured with its own model, MCP serv
 2. **Given** multiple panes exist, **When** the user enables an MCP server on one pane, **Then** other panes are not affected by that configuration.
 3. **Given** a pane has a knowledge source attached, **When** another pane is configured, **Then** each pane's knowledge source selection remains independent.
 4. **Given** guardrails are enabled on one pane, **When** another pane has guardrails disabled, **Then** each pane processes inputs according to its own guardrail settings.
+5. **Given** a configured pane exists, **When** the user clones it, **Then** a new pane is created with identical configuration settings (model, MCPs, knowledge sources, guardrails).
 
 ---
 
@@ -92,23 +94,21 @@ Display runtime metrics and performance data inline with each pane's output, ena
 
 ---
 
-### Epic 5: Export & Extensibility (Priority: P2)
+### Epic 5: Export (Priority: P2)
 
-Enable users to export comparison sessions including chat results and configurations, and support flexible pane scaling for power users.
+Enable users to export comparison sessions including chat results and configurations for offline review and future reference.
 
-**User Value**: Users can save and share their comparison work for offline review, documentation, or team collaboration, and scale their workspace to match complex evaluation needs.
+**User Value**: Users can save and share their comparison work for offline review, documentation, or team collaboration, preserving valuable experimentation results.
 
 **User Stories**:
 
 - **Story 5.1**: As an AI engineer, I want to export all chat results from my comparison session so that I can review outputs offline or share with colleagues.
 - **Story 5.2**: As a platform user, I want to export the configuration of each pane so that I can recreate comparison setups later.
-- **Story 5.3**: As a power user, I want to add more than the default number of panes so that I can run larger-scale comparisons when needed.
 
 **Acceptance Criteria**:
 
 1. **Given** a comparison session is active, **When** the user requests an export, **Then** chat content from all panes is included in the export.
 2. **Given** a comparison session is active, **When** the user requests an export, **Then** each pane's configuration (model, MCPs, knowledge sources, guardrails) is included.
-3. **Given** the default pane limit is reached, **When** the user requests additional panes, **Then** the system allows scaling beyond the default (up to a reasonable maximum).
 
 ---
 
@@ -119,13 +119,14 @@ Enable users to export comparison sessions including chat results and configurat
 - What happens when the user's viewport is too narrow for side-by-side display? The layout should adapt responsively, potentially stacking panes or providing horizontal scrolling.
 - How are very long responses handled across multiple panes? Each pane should independently scroll while maintaining the side-by-side layout.
 - What happens if an MCP server times out for one pane? The affected pane should display an error while other panes continue operating normally.
+- What happens if the user navigates away or refreshes mid-session? Session is lost; user should be warned before destructive navigation if unsaved work exists.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: System MUST allow users to create multiple chat panes within a single Playground session *(Epic 1)*
-- **FR-002**: System MUST support a minimum of 2 and a default maximum of 4 visible panes simultaneously *(Epic 1)*
+- **FR-002**: System MUST support a minimum of 2 and a maximum of 4 visible panes simultaneously *(Epic 1)*
 - **FR-003**: System MUST provide controls to toggle individual panes on/off while preserving their state *(Epic 1)*
 - **FR-004**: System MUST display active panes in a side-by-side layout for direct comparison *(Epic 1)*
 - **FR-005**: System MUST allow independent model selection for each pane *(Epic 2)*
@@ -133,21 +134,22 @@ Enable users to export comparison sessions including chat results and configurat
 - **FR-007**: System MUST allow independent knowledge source attachment for each pane *(Epic 2)*
 - **FR-008**: System MUST allow independent guardrail configuration for each pane *(Epic 2)*
 - **FR-009**: System MUST ensure complete configuration isolation between panes *(Epic 2)*
-- **FR-010**: System MUST provide a synchronized prompt mode where one input runs across all visible panes *(Epic 3)*
-- **FR-011**: System MUST provide an independent prompt mode where each pane has its own editable prompt *(Epic 3)*
-- **FR-012**: System MUST allow users to switch between synchronized and independent prompt modes *(Epic 3)*
-- **FR-013**: System MUST display response latency inline with each pane's output *(Epic 4)*
-- **FR-014**: System MUST display token usage (input/output) inline with each pane's output *(Epic 4)*
-- **FR-015**: System MUST support export of chat results from all panes *(Epic 5)*
-- **FR-016**: System MUST support export of pane configurations *(Epic 5)*
-- **FR-017**: System MUST allow scaling beyond the default 4 panes for extended comparisons *(Epic 5)*
+- **FR-010**: System MUST allow users to clone an existing pane's configuration to a new pane *(Epic 2)*
+- **FR-011**: System MUST provide a synchronized prompt mode where one input runs across all visible panes *(Epic 3)*
+- **FR-012**: System MUST provide an independent prompt mode where each pane has its own editable prompt *(Epic 3)*
+- **FR-013**: System MUST allow users to switch between synchronized and independent prompt modes *(Epic 3)*
+- **FR-014**: System MUST display response latency inline with each pane's output *(Epic 4)*
+- **FR-015**: System MUST display token usage (input/output) inline with each pane's output *(Epic 4)*
+- **FR-016**: System MUST support export of chat results from all panes *(Epic 5)*
+- **FR-017**: System MUST support export of pane configurations *(Epic 5)*
+- **FR-018**: System MUST respect existing platform permissions—users can only configure panes with models, MCPs, and knowledge sources they are authorized to access *(Epic 2)*
 
 ### Key Entities
 
 - **Comparison Session**: A Playground session containing multiple panes; tracks session-level state including prompt mode and pane arrangement
 - **Pane**: An individual chat instance within a comparison session; contains its own configuration, conversation history, and display state
 - **Pane Configuration**: The settings applied to a single pane including model selection, MCP servers, knowledge sources, and guardrail settings
-- **Prompt Mode**: Session-level setting determining whether prompts are synchronized across panes or independent per pane
+- **Prompt Mode**: Session-level setting determining whether prompts are synchronized across panes or independent per pane; defaults to synchronized mode
 - **Runtime Metrics**: Performance data associated with each response including latency and token counts
 
 ## Success Criteria *(mandatory)*
@@ -162,9 +164,20 @@ Enable users to export comparison sessions including chat results and configurat
 - **SC-006**: Switching between synchronized and independent prompt modes preserves all existing chat history
 - **SC-007**: Individual pane failures (model errors, timeouts) do not disrupt other active panes
 
+## Clarifications
+
+### Session 2026-01-21
+
+- Q: Does a comparison session persist when user navigates away or refreshes the browser? → A: Sessions are ephemeral—lost on navigation/refresh (no persistence)
+- Q: What is the maximum number of panes allowed? → A: 4 panes maximum (performance constraint)
+- Q: Which prompt mode is active by default when starting a new session? → A: Synchronized mode (shared prompt input)
+- Q: Can all users access all resources in comparison panes? → A: Respect existing platform permissions per user
+- Q: Can users duplicate an existing pane's configuration to a new pane? → A: Yes, allow cloning pane configurations
+
 ## Assumptions
 
-- Users have access to multiple models, MCP servers, and knowledge sources through the existing platform
+- Comparison sessions do not persist across page refreshes or navigation; users must manually export to preserve their work
+- Users have access to multiple models, MCP servers, and knowledge sources through the existing platform (subject to their existing permissions)
 - The existing Playground infrastructure supports the configuration options (models, MCPs, guardrails, knowledge sources) that will be exposed per pane
 - Users are familiar with basic Playground functionality and understand the concepts of models, MCPs, guardrails, and knowledge sources
 - The platform can handle concurrent requests from multiple panes without significant performance degradation
