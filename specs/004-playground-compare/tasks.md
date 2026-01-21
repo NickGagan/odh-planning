@@ -59,19 +59,23 @@
 - [ ] T010 [P] [E1] E2E test for pane add/remove in `packages/gen-ai/frontend/src/__tests__/cypress/cypress/e2e/playground-compare/multi-pane.cy.ts`
 - [ ] T011 [P] [E1] E2E test for pane toggle visibility in `packages/gen-ai/frontend/src/__tests__/cypress/cypress/e2e/playground-compare/pane-toggle.cy.ts`
 - [ ] T012 [P] [E1] Unit test for ComparisonPlayground component in `packages/gen-ai/frontend/src/app/Chatbot/compare/__tests__/ComparisonPlayground.spec.tsx`
+- [ ] T061 [P] [E1] E2E test for pane resize in `packages/gen-ai/frontend/src/__tests__/cypress/cypress/e2e/playground-compare/pane-resize.cy.ts`
+- [ ] T062 [P] [E1] E2E test for pane error isolation (one pane fails, others continue) in `packages/gen-ai/frontend/src/__tests__/cypress/cypress/e2e/playground-compare/error-isolation.cy.ts`
 
 ### Implementation for Epic 1
 
 - [ ] T013 [E1] Create ComparisonPlayground container component in `packages/gen-ai/frontend/src/app/Chatbot/compare/ComparisonPlayground.tsx`
-- [ ] T014 [P] [E1] Create Pane wrapper component extracting from ChatbotPlayground in `packages/gen-ai/frontend/src/app/Chatbot/compare/Pane.tsx`
+- [ ] T063 [E1] Create PaneErrorBoundary component to isolate per-pane failures in `packages/gen-ai/frontend/src/app/Chatbot/compare/PaneErrorBoundary.tsx`
+- [ ] T014 [P] [E1] Create Pane wrapper component extracting from ChatbotPlayground, wrapped in PaneErrorBoundary, in `packages/gen-ai/frontend/src/app/Chatbot/compare/Pane.tsx`
 - [ ] T015 [P] [E1] Create PaneHeader component with toggle/close controls in `packages/gen-ai/frontend/src/app/Chatbot/compare/PaneHeader.tsx`
 - [ ] T016 [E1] Create PaneLayout component using PatternFly Flex for side-by-side layout in `packages/gen-ai/frontend/src/app/Chatbot/compare/PaneLayout.tsx`
 - [ ] T017 [E1] Create AddPaneButton component in `packages/gen-ai/frontend/src/app/Chatbot/compare/AddPaneButton.tsx`
 - [ ] T018 [E1] Implement pane visibility toggle logic preserving hidden pane state in `packages/gen-ai/frontend/src/app/Chatbot/hooks/useComparisonSession.ts`
 - [ ] T019 [E1] Add responsive layout handling for narrow viewports in `packages/gen-ai/frontend/src/app/Chatbot/compare/PaneLayout.tsx`
+- [ ] T064 [E1] Implement pane resize with drag handles in `packages/gen-ai/frontend/src/app/Chatbot/compare/PaneLayout.tsx`
 - [ ] T020 [E1] Wire ComparisonPlayground into existing Chatbot routing in `packages/gen-ai/frontend/src/app/Chatbot/ChatbotPage.tsx`
 
-**Checkpoint**: Epic 1 complete - users can add/remove/toggle 2-4 panes side-by-side
+**Checkpoint**: Epic 1 complete - users can add/remove/toggle/resize 2-4 panes side-by-side
 
 ---
 
@@ -223,7 +227,7 @@
 
 **Foundational Phase**: T007-T009 can run in parallel after T005-T006
 
-**Epic 1**: T010-T012 tests in parallel; T014-T015 components in parallel
+**Epic 1**: T010-T012, T061-T062 tests in parallel; T014-T015 components in parallel
 
 **Epic 2**: T021-T023 tests in parallel; T026-T027 config panels in parallel
 
@@ -240,9 +244,11 @@
 T010: E2E test for pane add/remove
 T011: E2E test for pane toggle visibility
 T012: Unit test for ComparisonPlayground
+T061: E2E test for pane resize
+T062: E2E test for error isolation
 
 # Launch parallel component work after tests:
-T014: Create Pane wrapper component
+T014: Create Pane wrapper component (uses T063 PaneErrorBoundary)
 T015: Create PaneHeader component
 ```
 
@@ -291,13 +297,13 @@ Developer C (Epic 3):
 |-------|-------|------------------|
 | Setup | 4 | Small |
 | Foundational | 5 | Medium |
-| Epic 1 | 11 | Large |
+| Epic 1 | 15 | Large |
 | Epic 2 | 11 | Large |
 | Epic 3 | 10 | Medium |
 | Epic 4 | 7 | Small |
 | Epic 5 | 7 | Small |
 | Polish | 5 | Small |
-| **Total** | **60** | |
+| **Total** | **64** | |
 
 ---
 
