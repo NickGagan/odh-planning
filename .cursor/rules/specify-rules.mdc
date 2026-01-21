@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2026-01-07
 ## Active Technologies
 - TypeScript 4.9+ / React 18+ + PatternFly React 5.x, React Router, browser sessionStorage API (002-playground-prompt-ui)
 - Browser sessionStorage for conversations, templates, and parameters; no server-side persistence in initial phase (002-playground-prompt-ui)
+- TypeScript 5.x (Frontend), Go 1.23+ (BFF) + React 18, PatternFly 6 (Chatbot), `@patternfly/chatbot` (004-playground-compare)
+- N/A (ephemeral sessions—no persistence) (004-playground-compare)
 
 - TypeScript 5.x (React 18+) + PatternFly 5, React Query, Zustand (state management), WebSocket (streaming) (001-playground-multi-pane-comparison)
 
@@ -24,6 +26,7 @@ npm test && npm run lint
 TypeScript 5.x (React 18+): Follow standard conventions
 
 ## Recent Changes
+- 004-playground-compare: Added TypeScript 5.x (Frontend), Go 1.23+ (BFF) + React 18, PatternFly 6 (Chatbot), `@patternfly/chatbot`
 - 002-playground-prompt-ui: Added TypeScript 4.9+ / React 18+ + PatternFly React 5.x, React Router, browser sessionStorage API
 
 - 001-playground-multi-pane-comparison: Added TypeScript 5.x (React 18+) + PatternFly 5, React Query, Zustand (state management), WebSocket (streaming)
