@@ -1,0 +1,11 @@
+# Export directories (generated files, don't commit)
+exports/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
