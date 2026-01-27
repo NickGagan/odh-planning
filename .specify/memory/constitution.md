@@ -1,6 +1,59 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.2.0 → 2.3.0 (MINOR: Consolidated requirements, added performance section)
+
+Modified principles:
+- Principle XII: Further refinements to epic structure
+  - Added "Consolidating Outcomes and Requirements" guidance
+  - Epic outcomes ARE the requirements — no separate Functional Requirements section
+  - Added "Performance & Scaling" section requirement (feature-level)
+  - System-level constraints can go in brief "System Constraints" section if needed
+
+Rationale:
+- Overlap between epic outcomes and Functional Requirements created redundancy
+- Performance/scaling impact often overlooked until implementation
+- Single source of truth for requirements reduces document length and maintenance
+
+Templates requiring updates:
+- spec-template.md: ⚠ Remove Functional Requirements section, add Performance & Scaling
+
+Follow-up TODOs:
+- Update spec-template.md with consolidated format
+- Update 004-playground-compare spec to demonstrate new format
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.2.0)
+===================================
+Version change: 2.1.0 → 2.2.0 (MINOR: Revised epic structure for reduced redundancy and technical depth)
+
+Modified principles:
+- Principle XII: Revised epic structure format
+  - User stories now grouped by persona, no "As an X I want to Y" format
+  - Added "Technical Considerations" section for P1 epics (light architecture hints)
+  - P2/P3 epics use shorter format (same structure, fewer items, no tech hints)
+  - Explicit rules for story format and technical hint depth
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.1.0)
+===================================
+Version change: 2.0.0 → 2.1.0 (MINOR: Added cross-team dependency requirement to specification discovery)
+
+Modified principles:
+- Principle X: Added REQUIRED cross-team dependency identification during /speckit.specify
+  - New "Cross-Team Dependencies" section format for specs
+  - Dependency types: Capacity, Integration, Design, Testing, Informational
+  - Agent must proactively identify dependencies even if user doesn't mention them
+  - Common triggers documented for automatic dependency detection
+
+Rationale:
+- Cross-team dependencies were only surfaced during planning, causing late discovery
+- Moving identification to specification phase enables earlier coordination
+- Proactive detection ensures dependencies aren't missed when user forgets to mention them
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.0.0)
+===================================
 Version change: 1.8.1 → 2.0.0 (MAJOR: Consolidated principles, revised personas, updated epic model)
 
 Modified principles:
@@ -26,13 +79,6 @@ Rationale:
 - Cross-team coordination improved with dedicated requirements section and inline callouts
 - Team briefs removed since Crimson is primary consumer and distributes as needed
 - Added Open Questions export for async PM collaboration
-
-Templates requiring updates:
-- plan-template.md: ⚠ Review for team brief references (none found)
-- spec-template.md: ✅ Already aligned with epic structure
-- tasks-template.md: ✅ Already aligned with user story organization
-
-Follow-up TODOs: None
 ==================
 -->
 
@@ -357,6 +403,30 @@ Before writing any feature specification, the agent MUST conduct a structured di
 - Edge cases: What unusual scenarios should be considered?
 - Visual/UX references: Are there prototypes, mockups, or reference designs?
 
+**Cross-team dependency identification (REQUIRED):**
+
+Specifications MUST include a "Cross-Team Dependencies" section identifying all teams that may be impacted by or need to contribute to the feature. This section MUST be populated during `/speckit.specify`, not deferred to planning.
+
+For each dependency, identify:
+- **Team**: Which team is involved (reference OWNERS files per Principle VIII)
+- **Requirement**: What is needed from them
+- **Type**: Capacity | Integration | Design | Testing | Informational
+- **Notes**: Additional context (blocking vs. FYI, timeline sensitivity)
+
+Dependency types:
+- **Capacity**: Team needs awareness of changed load/volume patterns
+- **Integration**: Feature requires API, contract, or integration point with team's domain
+- **Design**: UX/design work needed from team
+- **Testing**: QE involvement for test coverage
+- **Informational**: FYI for awareness, no action required
+
+The agent MUST proactively identify cross-team dependencies based on the feature description, even if the user does not explicitly mention them. Common triggers:
+- Multiple models/MCPs/guardrails → Model Serving, MCP, Guardrails teams
+- New UI patterns or layouts → UX Team
+- Changed API contracts → Backend/Platform team
+- New user flows or edge cases → QE Team
+- Data persistence or state changes → relevant data-owning team
+
 **Question flow principles:**
 - Start with scope and relationship to existing work
 - Move to user impact and personas
@@ -462,7 +532,7 @@ When a feature requires work from multiple teams:
 - Dependencies between team epics MUST be documented inline (see Principle VIII)
 - Shared milestones MUST have clear integration checkpoints
 
-**Epic structure:**
+**Epic structure (P1 - core functionality):**
 ```
 ### Epic [N]: [Epic Name] (Priority: P1, Owner: [Team])
 
@@ -470,15 +540,72 @@ When a feature requires work from multiple teams:
 
 **User Value**: [What users can do when this epic is complete]
 
-**User Stories**:
-- Story N.1: [Specific scenario]
-- Story N.2: [Specific scenario]
+**Technical Considerations**: [Light architecture hints - patterns not implementations]
+- [Key technical challenge or constraint, e.g., "State must be isolated per pane"]
+- [Data flow consideration, e.g., "Streaming responses must be non-blocking across panes"]
 
-**Acceptance Criteria**:
-1. Given/When/Then for the epic as a whole
+**Outcomes by Persona**:
+
+_AI Engineer_:
+- [Testable outcome without "As an X I want to Y" prefix]
+- [Testable outcome]
+
+_Platform User_:
+- [Testable outcome]
+- [Testable outcome]
 
 > **⚠️ Dependency**: [If applicable, inline callout per Principle VIII]
 ```
+
+**Epic structure (P2/P3 - secondary functionality):**
+```
+### Epic [N]: [Epic Name] (Priority: P2, Owner: [Team])
+
+[Brief description - 1-2 sentences max]
+
+**User Value**: [What users can do when this epic is complete]
+
+**Outcomes by Persona**:
+
+_AI Engineer_:
+- [Testable outcome - fewer items than P1]
+
+_Platform User_:
+- [Testable outcome]
+```
+
+**User story format rules:**
+- Group outcomes by persona (AI Engineer, Platform User, ML Ops Engineer, etc.)
+- DO NOT use "As an X I want to Y so that Z" format — just state the testable outcome
+- Keep persona headings italicized for visual scanning
+- P1 epics: 3-5 outcomes per persona typical
+- P2/P3 epics: 1-3 outcomes per persona typical
+
+**Consolidating Outcomes and Requirements:**
+- DO NOT create a separate "Functional Requirements" section that duplicates epic outcomes
+- Epic outcomes ARE the user-facing requirements — they should be testable and unambiguous
+- If a requirement doesn't fit naturally into an epic, it may indicate a missing epic or scope creep
+- System-level constraints (permissions, limits, compliance) may be listed in a brief "System Constraints" section if needed
+- Goal: Single source of truth for requirements = epic outcomes
+
+**Technical considerations rules (P1 only):**
+- Include 1-3 light architecture hints that name patterns without prescribing implementation
+- Focus on the core technical challenge (what makes this epic hard)
+- Good: "State should be isolated per pane; streaming responses must be non-blocking"
+- Good: "Configuration changes must not trigger re-renders in sibling panes"
+- Bad: "Use React Context for state management" (too prescriptive)
+- Bad: "Create a PaneManager class" (implementation detail)
+- P2/P3 epics omit this section unless there's a non-obvious technical constraint
+
+**Performance & Scaling considerations (feature-level, not per-epic):**
+
+Specifications MUST include a "Performance & Scaling" section that identifies system impact:
+- Memory/resource usage implications (e.g., "4 concurrent panes increase client memory footprint")
+- API throughput changes (e.g., "single user may generate 4x concurrent inference requests")
+- Latency considerations (e.g., "slowest pane response determines perceived completion time in sync mode")
+- Degradation behavior (e.g., "system should remain responsive if one pane's request is slow")
+
+This section prompts thinking about how the feature affects the existing system, not implementation details.
 
 **Consolidation guidelines:**
 - Stories that share the same UI area → single Epic
@@ -612,4 +739,4 @@ This constitution supersedes all other development practices. Amendments require
 - MINOR version: New principles or materially expanded guidance
 - PATCH version: Clarifications, wording improvements, typo fixes
 
-**Version**: 2.0.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-21
+**Version**: 2.3.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-21
