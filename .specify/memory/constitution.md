@@ -1,6 +1,41 @@
 <!--
 SYNC IMPACT REPORT
 ==================
+Version change: 2.4.0 → 2.5.0 (MINOR: Added spike identification to discovery flow)
+
+Modified principles:
+- Principle X: Added spike identification as REQUIRED part of specification discovery
+  - New "Potential Spikes" section format for specs (alongside Edge Cases)
+  - Spike triggers documented for proactive identification
+  - Format includes: Area, Uncertainty, Spike Goal, Recommended Timebox
+  - Common spike triggers: new dependencies, performance unknowns, unfamiliar patterns
+
+Rationale:
+- High-uncertainty areas often discovered late in implementation causing delays
+- Time-boxed research reduces risk before committing to full implementation
+- Proactive spike identification enables better sprint planning
+
+Templates requiring updates:
+- spec-template.md: ⚠ Add Potential Spikes section format
+
+Follow-up TODOs:
+- Update spec-template.md with Potential Spikes section
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.4.0)
+===================================
+Version change: 2.3.0 → 2.4.0 (MINOR: Added comprehensive team ownership reference from OWNERS files)
+
+Modified principles:
+- Principle VIII: Expanded team ownership documentation
+  - Added canonical parent repository URL
+  - Added comprehensive Team Ownership Reference table with all teams and code areas
+  - Teams sourced from OWNERS and OWNERS_ALIASES files in odh-dashboard
+  - Simplified previous inline examples to reference the new table
+==================
+
+PREVIOUS SYNC IMPACT REPORT (2.3.0)
+===================================
 Version change: 2.2.0 → 2.3.0 (MINOR: Consolidated requirements, added performance section)
 
 Modified principles:
@@ -9,18 +44,6 @@ Modified principles:
   - Epic outcomes ARE the requirements — no separate Functional Requirements section
   - Added "Performance & Scaling" section requirement (feature-level)
   - System-level constraints can go in brief "System Constraints" section if needed
-
-Rationale:
-- Overlap between epic outcomes and Functional Requirements created redundancy
-- Performance/scaling impact often overlooked until implementation
-- Single source of truth for requirements reduces document length and maintenance
-
-Templates requiring updates:
-- spec-template.md: ⚠ Remove Functional Requirements section, add Performance & Scaling
-
-Follow-up TODOs:
-- Update spec-template.md with consolidated format
-- Update 004-playground-compare spec to demonstrate new format
 ==================
 
 PREVIOUS SYNC IMPACT REPORT (2.2.0)
@@ -45,11 +68,6 @@ Modified principles:
   - Dependency types: Capacity, Integration, Design, Testing, Informational
   - Agent must proactively identify dependencies even if user doesn't mention them
   - Common triggers documented for automatic dependency detection
-
-Rationale:
-- Cross-team dependencies were only surfaced during planning, causing late discovery
-- Moving identification to specification phase enables earlier coordination
-- Proactive detection ensures dependencies aren't missed when user forgets to mention them
 ==================
 
 PREVIOUS SYNC IMPACT REPORT (2.0.0)
@@ -72,13 +90,6 @@ Removed sections:
 - Persona names and narrative elements (quotes, detailed profiles)
 - Post-Planning Workflow team briefs section from Principle IX
 - Team briefs references from Principle VIII
-
-Rationale: 
-- Personas simplified to role focus for clarity without fictional names
-- Epic definition aligned with actual team workflow (sprint-scoped, single-team)
-- Cross-team coordination improved with dedicated requirements section and inline callouts
-- Team briefs removed since Crimson is primary consumer and distributes as needed
-- Added Open Questions export for async PM collaboration
 ==================
 -->
 
@@ -303,30 +314,45 @@ Development MUST include continuous stakeholder engagement. Red Hat's open decis
 
 Cross-team features MUST be planned at the epic/requirements level, with dependencies identified as early as possible. Team ownership MUST be determined using the project's OWNERS files.
 
+**Parent Repository:** https://github.com/opendatahub-io/odh-dashboard
+
+This is the canonical source for all team ownership information. Consult `OWNERS` and `OWNERS_ALIASES` files for current mappings.
+
 **Non-negotiable rules:**
 - Cross-team dependencies MUST be identified at the earliest planning stage (specification or earlier)
 - Dependencies MUST be refined and validated as planning progresses
 - Integration points MUST be defined through versioned contracts (OpenAPI, event schemas, data formats)
 - Dependencies MUST be documented with clear ownership and timelines
 - Teams MUST NOT prescribe implementation approaches to other teams
-- Team ownership MUST be identified using `OWNERS` and `OWNERS_ALIASES` files in the codebase
+- Team ownership MUST be identified using the Team Ownership Reference below
 
-**Team identification via OWNERS files:**
-- Reference `../../odh-dashboard/OWNERS` for directory-to-team mapping
-- Reference `../../odh-dashboard/OWNERS_ALIASES` for team member lists
-- Use the `filters` section in OWNERS to identify which team owns which directories
+**Team Ownership Reference:**
+
+| Team | Code Areas |
+|------|------------|
+| **gen-ai** | `packages/gen-ai/` |
+| **model-serving-metrics** | `frontend/src/(api|concepts|pages)/(modelServing|modelServingKServe)/`, `packages/(model-serving|model-serving-kserve|kserve|llmd-serving)/` |
+| **model-registry-catalog** | `frontend/src/(api|concepts|pages|routes)/(modelCatalog|modelRegistry|modelRegistrySettings)/`, `packages/model-registry/` |
+| **pipelines** | `frontend/src/(api|concepts|pages|routes)/pipelines/` |
+| **workbenches** | `frontend/src/(api|concepts)/(notebooks|notebookController)/` |
+| **hardware-profiles** | `frontend/src/(api|concepts)/(acceleratorProfiles|hardwareProfiles)/` |
+| **connections** | `frontend/src/(concepts|pages)/connectionTypes/` |
+| **ai-trusty** | `frontend/src/(api|concepts|pages)/trustyai/` |
+| **platform** | `frontend/src/plugins/`, `packages/(plugin-core|jest-config|eslint-config|plugin-template|tsconfig)/` |
+| **quality-e2e-testing** | `packages/cypress/` |
+| **nim-serving** | NIM/Ecosystem integration |
+| **general** | Catchall for areas without specific team ownership |
+
+**Additional area labels (no dedicated team approvers):**
+- `backend/` → Backend services
+- `docs/` → Documentation
+- `manifests/` → Kubernetes manifests
+- `frontend/src/(concepts|pages)/distributedWorkloads/` → Distributed workloads
+
+**Team identification process:**
+- Reference the Team Ownership Reference table above for directory-to-team mapping
 - When a feature touches multiple directories with different owners, identify ALL affected teams
-
-**Key team ownership areas (from OWNERS):**
-- `packages/gen-ai/` → gen-ai-approvers
-- `frontend/src/(api|concepts|pages)/modelServing/` → model-serving-metrics-approvers
-- `frontend/src/(api|concepts|pages)/pipelines/` → pipelines-approvers
-- `frontend/src/(concepts|pages)/connectionTypes/` → connections-approvers
-- `frontend/src/(api|concepts)/(acceleratorProfiles|hardwareProfiles)/` → hardware-profiles-approvers
-- `frontend/src/(api|concepts)/(notebooks|notebookController)/` → workbenches-approvers
-- `frontend/src/(api|concepts|pages)/(modelCatalog|modelRegistry)/` → model-registry-catalog-approvers
-- `frontend/src/plugins/` → platform-approvers
-- `packages/cypress/` → quality-e2e-testing-approvers
+- For areas not listed, use "general" team or consult the parent repository OWNERS file
 
 **Cross-Team Requirements section:**
 
@@ -401,6 +427,7 @@ Before writing any feature specification, the agent MUST conduct a structured di
 - Success criteria: How will we know this feature is successful?
 - Constraints: What limitations exist (technical, timeline, regulatory)?
 - Edge cases: What unusual scenarios should be considered?
+- Potential spikes: What areas have high uncertainty requiring time-boxed research?
 - Visual/UX references: Are there prototypes, mockups, or reference designs?
 
 **Cross-team dependency identification (REQUIRED):**
@@ -426,6 +453,26 @@ The agent MUST proactively identify cross-team dependencies based on the feature
 - Changed API contracts → Backend/Platform team
 - New user flows or edge cases → QE Team
 - Data persistence or state changes → relevant data-owning team
+
+**Potential spikes identification (REQUIRED):**
+
+Specifications MUST include a "Potential Spikes" section identifying areas of high uncertainty that may benefit from time-boxed research before or during implementation. This section appears alongside Edge Cases.
+
+For each potential spike, identify:
+- **Area**: What needs investigation
+- **Uncertainty**: Why this is uncertain (new dependency, unfamiliar pattern, unclear feasibility)
+- **Spike Goal**: What question the spike should answer
+- **Recommended Timebox**: Suggested duration (typically 1-3 days)
+
+Common spike triggers:
+- New external dependencies or integrations not previously used in the codebase
+- Performance-critical paths where behavior under load is unknown
+- Areas where existing codebase patterns may not apply
+- Third-party API capabilities that need verification
+- Complex state management scenarios
+- Accessibility or responsive design challenges without clear precedent
+
+The agent MUST proactively identify potential spikes based on the feature description, even if the user does not explicitly mention them.
 
 **Question flow principles:**
 - Start with scope and relationship to existing work
@@ -627,7 +674,7 @@ All specification, planning, and epic breakdown work MUST be approached from the
 
 **Non-negotiable rules:**
 - Agent MUST approach all `/speckit.specify`, `/speckit.plan`, and `/speckit.tasks` work from a senior architect perspective
-- Agent MUST research the existing codebase at `../../odh-dashboard` before making architectural recommendations
+- Agent MUST research the existing codebase at `../odh-dashboard` (GitHub: https://github.com/opendatahub-io/odh-dashboard) before making architectural recommendations
 - Recommendations MUST be consistent with existing patterns, conventions, and abstractions found in the codebase
 - Output MUST be written for engineers of varying experience levels (clear, actionable, not assuming deep familiarity)
 - Agent MUST identify and reference existing components, utilities, and patterns that can be reused
@@ -654,7 +701,7 @@ All specification, planning, and epic breakdown work MUST be approached from the
 - Provide enough context for engineers unfamiliar with specific areas
 - Avoid jargon without explanation
 
-**Reference codebase**: `../../odh-dashboard`
+**Reference codebase**: `../odh-dashboard` (GitHub: https://github.com/opendatahub-io/odh-dashboard)
 
 **Rationale:** Specifications and plans grounded in the actual codebase are more actionable and lead to consistent implementations. A senior architect perspective ensures recommendations consider the broader system and are practical for the team to execute.
 
@@ -739,4 +786,4 @@ This constitution supersedes all other development practices. Amendments require
 - MINOR version: New principles or materially expanded guidance
 - PATCH version: Clarifications, wording improvements, typo fixes
 
-**Version**: 2.3.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-21
+**Version**: 2.5.0 | **Ratified**: 2025-12-19 | **Last Amended**: 2026-01-30
