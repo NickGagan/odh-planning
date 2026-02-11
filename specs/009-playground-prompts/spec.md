@@ -59,34 +59,45 @@ _ML Ops Engineer_:
 
 ### Epic 3: Prompt Editing with Unsaved State (Priority: P1, Owner: Dashboard/gen-ai)
 
-Allow users to freely edit loaded prompts within Playground, with clear visual indication of unsaved changes and no implicit autosave.
+Allow users to edit registry prompts within Playground, with clear visual indication of unsaved changes and no implicit autosave. Sample/starter prompts are read-only and cannot be edited.
 
-**User Value**: Users can experiment with prompt modifications safely, knowing changes won't affect the saved version until explicitly saved.
+**User Value**: Users can experiment with registry prompt modifications safely, knowing changes won't affect the saved version until explicitly saved. Sample prompts serve as read-only templates that can be used as-is or saved as new prompts.
 
 **Technical Considerations**:
-- Editable prompt area within Playground
-- Clear visual state for "Modified" / "Unsaved changes"
+- Editable prompt area within Playground for registry prompts only
+- Sample/starter prompts are read-only (no editing capability)
+- Clear visual state for "Modified" / "Unsaved changes" on editable prompts
 - No autosave behavior; all saves are explicit
 - Inline warning near "Load Prompt" button when unsaved changes exist
 
 **Outcomes by Persona**:
 
 _AI Engineer_:
-- Edit loaded prompt freely within Playground
+- Edit loaded registry prompts freely within Playground
 - See clear "Unsaved changes" indicator when modifications exist
 - See warning message near "Load Prompt" when attempting to load different prompt with unsaved changes
+- Understand that sample prompts are read-only templates
 - Understand that changes are not automatically saved
 
 _Data Scientist_:
-- Experiment with prompt variations without affecting saved versions
+- Experiment with registry prompt variations without affecting saved versions
+- Use sample prompts as-is for quick experimentation
 - Clearly distinguish between original and modified prompt state
 
-**Visual States**:
+**Editability by Prompt Source**:
+| Prompt Source | Editable | Notes |
+|---------------|----------|-------|
+| Registry prompt | ✅ Yes | Can edit, save as new version or fork |
+| Sample prompt | ❌ No | Read-only; can only save as new prompt |
+| Local/new | ✅ Yes | Editable until saved |
+
+**Visual States** (for editable prompts):
 | State | Indicator |
 |-------|-----------|
 | Clean (unchanged) | No indicator |
 | Modified (unsaved) | "Unsaved changes" badge/label |
 | Loading different prompt | Inline warning: "Loading prompt will overwrite current prompt" |
+| Sample prompt loaded | "Read-only" indicator |
 
 ---
 
@@ -202,6 +213,7 @@ _AI Engineer_:
 ## System Constraints
 
 - No autosave; all saves are explicit user actions
+- Sample prompts are read-only and cannot be edited (can only be saved as new prompt)
 - Sample prompts cannot be versioned (only forked as new prompt)
 - Prompt Registry APIs must be available for full functionality (partial degradation if unavailable)
 - Prompts have two types: "text" and "chat" (chat has system prompt component)
@@ -221,7 +233,7 @@ _AI Engineer_:
 - **SC-001**: Users can load prompts from Prompt Registry into Playground via modal
 - **SC-002**: Users can load sample prompts into Playground
 - **SC-003**: Users can select specific versions when loading registry prompts
-- **SC-004**: Users can edit prompts without immediately affecting saved versions
+- **SC-004**: Users can edit registry prompts without immediately affecting saved versions (sample prompts are read-only)
 - **SC-005**: Users can save edits as new version (registry prompts) or new prompt
 - **SC-006**: Sample prompts cannot be versioned (only saved as new prompt)
 - **SC-007**: Users can revert unsaved edits back to loaded version
