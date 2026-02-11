@@ -14,20 +14,20 @@
 
 ### Epic 1: Load Prompt Modal (Priority: P1, Owner: Dashboard/gen-ai)
 
-Implement a "Load Prompt" modal accessible from the existing prompt area in Playground, allowing users to browse and load prompts from the Prompt Registry or Sample Prompts.
+Implement a "Load Prompt" modal accessible from the existing prompt area in Playground, allowing users to browse and load prompts from the Prompt Registry or Example Prompts.
 
 **User Value**: Users can discover and load governed prompts directly within Playground, eliminating manual copy/paste and maintaining version awareness.
 
 **Technical Considerations**:
 - Modal opens via "Load Prompt" button in existing prompt area
-- Must support browsing both Prompt Registry (versioned) and Sample Prompts (non-versioned)
+- Must support browsing both Prompt Registry (versioned) and Example Prompts (non-versioned)
 - Sidebar within modal shows prompt details and version selector when a prompt is selected
 
 **Outcomes by Persona**:
 
 _AI Engineer_:
 - Click "Load Prompt" to open prompt selection modal
-- Browse prompts from Prompt Registry and Sample Prompts
+- Browse prompts from Prompt Registry and Example Prompts
 - Select a prompt to view details in sidebar (name, description, version history)
 - Choose specific version from dropdown before loading
 
@@ -46,7 +46,7 @@ Enable version selection when loading prompts from the Prompt Registry, allowing
 **Technical Considerations**:
 - Version dropdown appears in sidebar when registry prompt is selected
 - Default to latest version, allow selection of older versions
-- Sample prompts have no version selector (non-versioned)
+- Example prompts have no version selector (non-versioned)
 
 **Outcomes by Persona**:
 
@@ -66,7 +66,7 @@ _ML Ops Engineer_:
 
 Allow users to edit registry prompts within Playground, with clear visual indication of unsaved changes and no implicit autosave. Sample/starter prompts are read-only and cannot be edited.
 
-**User Value**: Users can experiment with registry prompt modifications safely, knowing changes won't affect the saved version until explicitly saved. Sample prompts serve as read-only templates that can be used as-is or saved as new prompts.
+**User Value**: Users can experiment with registry prompt modifications safely, knowing changes won't affect the saved version until explicitly saved. Example prompts serve as read-only templates that can be used as-is or saved as new prompts.
 
 **Technical Considerations**:
 - Editable prompt area within Playground for registry prompts only
@@ -81,19 +81,19 @@ _AI Engineer_:
 - Edit loaded registry prompts freely within Playground
 - See clear "Unsaved changes" indicator when modifications exist
 - See warning message near "Load Prompt" when attempting to load different prompt with unsaved changes
-- Understand that sample prompts are read-only templates
+- Understand that example prompts are read-only templates
 - Understand that changes are not automatically saved
 
 _Data Scientist_:
 - Experiment with registry prompt variations without affecting saved versions
-- Use sample prompts as-is for quick experimentation
+- Use example prompts as-is for quick experimentation
 - Clearly distinguish between original and modified prompt state
 
 **Editability by Prompt Source**:
 | Prompt Source | Editable | Notes |
 |---------------|----------|-------|
 | Registry prompt | ✅ Yes | Can edit, save as new version or fork |
-| Sample prompt | ❌ No | Read-only; can only save as new prompt |
+| Example prompt | ❌ No | Read-only; can only save as new prompt |
 | Local/new | ✅ Yes | Editable until saved |
 
 **Visual States** (for editable prompts):
@@ -102,7 +102,7 @@ _Data Scientist_:
 | Clean (unchanged) | No indicator |
 | Modified (unsaved) | "Unsaved changes" badge/label |
 | Loading different prompt | Inline warning: "Loading prompt will overwrite current prompt" |
-| Sample prompt loaded | "Read-only" indicator |
+| Example prompt loaded | "Read-only" indicator |
 
 ---
 
@@ -115,7 +115,7 @@ Enable users to save prompts from Playground, supporting save as new version (fo
 **Technical Considerations**:
 - Save options depend on prompt provenance (registry, sample, local/new)
 - Registry prompts can save as new version or fork as new prompt
-- Sample prompts can only be saved as new prompt (no versioning)
+- Example prompts can only be saved as new prompt (no versioning)
 - New/unsaved prompts save as new prompt
 
 **Outcomes by Persona**:
@@ -133,7 +133,7 @@ _ML Ops Engineer_:
 | Prompt Source | Save as New Version | Save as New Prompt |
 |---------------|---------------------|-------------------|
 | Registry prompt | ✅ Yes | ✅ Yes (fork) |
-| Sample prompt | ❌ No | ✅ Yes |
+| Example prompt | ❌ No | ✅ Yes |
 | Local/new | ❌ No | ✅ Yes |
 
 > **Dependency**: Razzmatazz team (RHAISTRAT-150) must provide save/version APIs.
@@ -168,7 +168,7 @@ _Data Scientist_:
 
 Display clear provenance information for the current prompt, helping users understand the source and governance status of the prompt they're working with.
 
-**User Value**: Users always know whether they're working with a governed registry prompt, a sample prompt, or an unsaved local prompt, informing their save and sharing decisions.
+**User Value**: Users always know whether they're working with a governed registry prompt, a example prompt, or an unsaved local prompt, informing their save and sharing decisions.
 
 **Technical Considerations**:
 - Provenance indicator visible in prompt area
@@ -186,7 +186,7 @@ _AI Engineer_:
 | Source | Display |
 |--------|---------|
 | Registry prompt | "From Registry: [name] v[version]" |
-| Sample prompt | "Sample: [name]" |
+| Example prompt | "Example: [name]" |
 | Local/unsaved | "Unsaved prompt" |
 
 ---
@@ -196,7 +196,8 @@ _AI Engineer_:
 - What happens when Prompt Registry API is unavailable? Show error state in modal; allow continued editing of current prompt; disable save to registry.
 - What happens if user tries to save a prompt with a name that already exists? Show error from registry API; prompt user to choose different name.
 - What happens if the prompt version was deleted while user was editing? Save as new version fails; offer to save as new prompt instead.
-- What happens when loading a prompt type incompatible with current Playground mode? [NEEDS CLARIFICATION: How do text vs chat prompts map to Playground?]
+- What happens when loading a legacy "text" prompt? Text prompts are automatically treated as chat-system prompts and loaded into the system prompt area.
+- What happens when loading an MLFlow prompt with user/assistant roles? User and assistant rows are displayed as read-only; only the system prompt is editable.
 - What happens if registry save fails mid-operation? Show error message; preserve local state; allow retry.
 - What happens with very long prompts? Prompt area should scroll; consider character limit warnings if registry has limits.
 
@@ -205,7 +206,7 @@ _AI Engineer_:
 | Area | Uncertainty | Spike Goal | Recommended Timebox |
 |------|-------------|------------|---------------------|
 | Prompt Registry API Contract | APIs being built in parallel (RHAISTRAT-150) | Validate API contract for load/save/version operations | 2 days |
-| Prompt Type Mapping | Unclear how "text" vs "chat" prompts map to Playground UI | Determine UX for loading different prompt types | 1 day |
+| MLFlow Prompt Handling | Prompts with user/assistant roles need special handling | Validate read-only row behavior and system prompt isolation | 1 day |
 
 ## Performance & Scaling
 
@@ -217,30 +218,35 @@ _AI Engineer_:
 
 ## System Constraints
 
-- No autosave; all saves are explicit user actions
-- Sample prompts are read-only and cannot be edited (can only be saved as new prompt)
-- Sample prompts cannot be versioned (only forked as new prompt)
+- No autosave; all saves are explicit user actions — all edits create new versions
+- Example prompts are read-only and cannot be edited (can only be saved as new prompt)
+- Example prompts cannot be versioned (only forked as new prompt)
 - Prompt Registry APIs must be available for full functionality (partial degradation if unavailable)
-- Prompts have two types: "text" and "chat" (chat has system prompt component)
+- All prompts are treated as "chat" type with system prompt component
+- Legacy "text" prompts are not supported in 3.4; they will be migrated to chat-system prompts in future releases
+- Users can swap between prompt types (text ↔ chat) — existing text prompts load and save as chat-system prompts
+- MLFlow-originated prompts with "user" or "assistant" roles have those rows as read-only; only system prompt is editable
+- Create prompt modal uses its own UI (not duplicating MLFlow UI) for flexibility
 
 ## Key Entities
 
-- **Prompt**: A reusable instruction template, either "text" type or "chat" type (with system component)
+- **Prompt**: A reusable instruction template; all prompts are "chat" type with system prompt component in 3.4
 - **Prompt Version**: A specific revision of a registry prompt, with version number and timestamp
 - **Prompt Registry**: The governed store for versioned prompts (RHAISTRAT-150)
-- **Sample Prompt**: A non-versioned example prompt for learning/templates
-- **Prompt Provenance**: The source and governance status of a prompt (Registry, Sample, Local)
+- **Example Prompt**: A non-versioned example prompt for learning/templates; read-only
+- **Prompt Provenance**: The source and governance status of a prompt (Registry, Example, Local)
+- **MLFlow Prompt**: A prompt originating from MLFlow UI that may contain user/assistant roles (read-only rows)
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
 - **SC-001**: Users can load prompts from Prompt Registry into Playground via modal
-- **SC-002**: Users can load sample prompts into Playground
+- **SC-002**: Users can load example prompts into Playground
 - **SC-003**: Users can select specific versions when loading registry prompts
-- **SC-004**: Users can edit registry prompts without immediately affecting saved versions (sample prompts are read-only)
+- **SC-004**: Users can edit registry prompts without immediately affecting saved versions (example prompts are read-only)
 - **SC-005**: Users can save edits as new version (registry prompts) or new prompt
-- **SC-006**: Sample prompts cannot be versioned (only saved as new prompt)
+- **SC-006**: Example prompts cannot be versioned (only saved as new prompt)
 - **SC-007**: Users can revert unsaved edits back to loaded version
 - **SC-008**: Prompt provenance is clearly visible (Registry, Sample, Local)
 - **SC-009**: Unsaved changes are clearly indicated with "Modified" state
@@ -268,21 +274,14 @@ _AI Engineer_:
 
 The following questions require PM input before finalizing the specification:
 
-### Q1: Sample Prompts Source
-Where do sample prompts come from?
-1. Bundled with product - Sample prompts shipped as static content with Dashboard
-2. ConfigMap/admin-managed - Platform admin configures sample prompts
+### Q1: Example Prompts Source
+Where do example prompts come from?
+1. Bundled with product - Example prompts shipped as static content with Dashboard
+2. ConfigMap/admin-managed - Platform admin configures example prompts
 3. External repository - Fetched from a Red Hat-managed samples repository
 4. Other
 
-### Q2: Prompt Type Mapping
-Prompts can be "text" or "chat" (with system component). When loading into Playground:
-1. Text prompts → user message area
-2. Chat prompts → system prompt + optionally pre-fills user message
-3. User chooses where to apply
-4. Other
-
-### Q3: Save Destination Model
+### Q2: Save Destination Model
 When a user saves a new prompt or new version from Playground, where does it go?
 1. Always to Prompt Registry (governed)
 2. User chooses destination (registry, personal workspace, etc.)
@@ -291,6 +290,16 @@ When a user saves a new prompt or new version from Playground, where does it go?
 5. Other
 
 ## Clarifications
+
+### Design Refinement Session 2026-02-11
+
+- Q: Should we duplicate the MLFlow UI in the create prompt modal? → A: No, use different UI for flexibility
+- Q: Can users swap prompt types? → A: Yes, can swap between text and chat types
+- Q: How are edits treated? → A: All edits to prompts are treated as new versions
+- Q: Do we support the old "text" prompt type? → A: Not for 3.4; text prompts will later be translated to system prompts
+- Q: How are prompts treated? → A: All prompts treated as "chat" type; existing text prompts load and save as chat-system prompts
+- Q: What about MLFlow prompts with user/assistant roles? → A: User/assistant rows are read-only; only system prompt is editable
+- Q: What do we call sample prompts? → A: "Example prompts"; namespace/published prompts come later
 
 ### Session 2026-01-27
 
@@ -305,13 +314,15 @@ When a user saves a new prompt or new version from Playground, where does it go?
 
 - Prompt Registry (RHAISTRAT-150) will provide APIs for listing, loading, saving, and versioning prompts
 - The existing Playground prompt area can accommodate provenance indicators and state badges
-- Sample prompts exist and are accessible (source to be clarified)
-- Users understand the difference between governed (registry) and sample prompts
+- Example prompts exist and are accessible (source to be clarified)
+- Users understand the difference between governed (registry) and example prompts
 - Modal/drawer pattern is consistent with existing Playground UI patterns
 - Prompt Registry handles authorization (who can save/version prompts)
 
 ## Future Considerations (Post-MVP)
 
+- Namespace/published prompts (beyond example prompts)
+- Support for legacy "text" prompt type migration to chat-system prompts
 - Visual diff between prompt versions
 - Inline prompt metadata editing (tags, owner, status)
 - Read-only view for certified prompts
