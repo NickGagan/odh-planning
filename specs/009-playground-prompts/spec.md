@@ -5,6 +5,11 @@
 **Status**: Draft
 **Input**: User description: "Playground-native Prompt experience for loading, editing, saving, and versioning prompts from Prompt Registry"
 
+## Design References
+
+- **Prototype**: https://andybraren.github.io/rhoai-integration-prototype/gen-ai-studio/playground
+- **Figma**: https://www.figma.com/design/0KwA2EuFmA48GAQAOyjbIb/3.4-Playground?node-id=440-3247&t=aCrLHQvSQ2iGGXat-0
+
 ## Epics *(mandatory)*
 
 ### Epic 1: Load Prompt Modal (Priority: P1, Owner: Dashboard/gen-ai)
