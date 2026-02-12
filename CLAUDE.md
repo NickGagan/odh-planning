@@ -54,48 +54,78 @@ When a session starts, follow this initialization flow:
    
    Example: If `main` has specs up to 004, but PRs exist for 005-feature-a and 005-feature-b, the next branch should be 006.
 
-### Step 1: Welcome and Mode Selection
+### Step 1: Welcome and Input
 
-Begin by greeting the user and asking:
+Begin by greeting the user and asking for their input:
 
 ```
-Welcome to ODH Planning! This session will help you create or continue work on a feature specification.
+Welcome to ODH Planning!
 
-Are you working on:
-1. **New Specification** - Create a new feature spec from strategic input
-2. **Existing Specification** - Continue work on an existing spec branch
-
-Please choose (1 or 2):
+What are you working on? Please provide one of:
+- A Jira link (e.g., https://issues.redhat.com/browse/RHOAIENG-XXXX)
+- A STRAT description for a new feature
+- An existing spec ID (e.g., "4" or "004-playground-compare")
+- A PR number (e.g., "#12" or "PR 12")
 ```
 
-### Step 2: Branch Setup
+### Step 2: Determine Flow and Setup
 
-**If New Specification (1):**
+Based on the user's input, determine which flow to follow:
+
+**Detect Input Type:**
+
+| Input Pattern | Flow | Action |
+|---------------|------|--------|
+| Jira URL (`issues.redhat.com`, `jira.`) | New Spec | Extract description, proceed to new spec flow |
+| STRAT/feature description (text) | New Spec | Use as strategic input, proceed to new spec flow |
+| Spec number (`4`, `004`, `004-feature-name`) | Existing Spec | Load existing branch and spec |
+| PR reference (`#12`, `PR 12`, PR URL) | Existing Spec | Load PR's branch and spec |
+
+---
+
+**If New Specification (Jira link or STRAT description):**
 
 1. Confirm we're on the latest `main` branch:
    ```bash
-   git fetch origin
    git checkout main
    git pull origin main
    ```
 
-2. Proceed to [Step 3: Gather Strategic Input](#step-3-gather-strategic-input-new-specs-only)
+2. **If Jira link provided**: Attempt to fetch description
+   - If Jira CLI/integration available: Load the issue description
+   - Otherwise: Ask user to paste the Jira description
 
-**If Existing Specification (2):**
-
-1. Ask for the branch identifier:
+3. **Ask for additional context**:
    ```
-   Please provide the branch name or spec number (e.g., "004-playground-compare" or just "4"):
+   Do you have any additional context to provide?
+   - Figma designs or mockups (URL)
+   - Technical documentation
+   - Related specifications in this repo
+   - API contracts or dependencies
+   
+   (Enter URLs/paths or type "skip" to continue):
    ```
 
-2. List available spec branches to help the user if needed:
+4. Proceed to [Step 3: Start Specification](#step-3-start-specification-new-specs)
+
+---
+
+**If Existing Specification (Spec ID or PR):**
+
+1. **Resolve the branch name**:
+   - If spec number (e.g., `4`): Find matching branch `004-*`
+   - If PR reference: Get branch from PR
+     ```bash
+     gh pr view <pr-number> --json headRefName,number,title,url,state,reviewDecision
+     ```
+
+2. List available spec branches if ambiguous:
    ```bash
-   git branch -a | grep -E '^[* ]*[0-9]{3}-|remotes/origin/[0-9]{3}-'
+   git branch -a | grep -E '[0-9]{3}-' | grep -i "<number>"
    ```
 
-3. Checkout the specified branch:
+3. Checkout the branch:
    ```bash
-   git fetch origin
    git checkout <branch-name>
    git pull origin <branch-name>
    ```
@@ -134,42 +164,7 @@ Please choose (1 or 2):
 
 7. Await user command and proceed accordingly.
 
-### Step 3: Gather Strategic Input (New Specs Only)
-
-For new specifications, gather the required context:
-
-**3a. Strategic Link**
-
-```
-Please provide the strategic link (Jira epic, initiative, or feature request URL):
-```
-
-**3b. Load or Request Description**
-
-- **If Jira integration is available**: Use `gh` or Jira CLI to fetch the strategic item's description:
-  ```bash
-  # Example for GitHub issue
-  gh issue view <issue-number> --json title,body
-  ```
-
-- **If no integration or manual input preferred**: Ask the user:
-  ```
-  Please provide the jira description
-  ```
-
-**3c. Additional Context (Optional)**
-
-```
-Do you have any additional context to provide?
-- Figma designs or mockups (URL)
-- Technical documentation
-- Related specifications in this repo
-- API contracts or dependencies
-
-(Enter URLs/paths or type "skip" to continue):
-```
-
-### Step 4: Start Specification (New Specs Only)
+### Step 3: Start Specification (New Specs)
 
 Once context is gathered, initiate the spec-kit workflow:
 
@@ -180,6 +175,7 @@ Once context is gathered, initiate the spec-kit workflow:
    Ready to create specification with:
    - Strategic Input: [link/description summary]
    - Additional Context: [list any provided]
+   - Next branch number: [NNN] (based on Step 0 analysis)
    
    Starting specification discovery...
    ```
@@ -197,9 +193,9 @@ Once context is gathered, initiate the spec-kit workflow:
    - Continue clarification until all markers are resolved
    - Re-validate the spec after clarifications are incorporated
 
-5. Once clarification is complete, proceed to [Step 5: Verification and PR](#step-5-verification-and-pr)
+5. Once clarification is complete, proceed to [Step 4: Verification and PR](#step-4-verification-and-pr)
 
-### Step 5: Verification and PR
+### Step 4: Verification and PR
 
 After the spec is written and validated:
 
@@ -232,6 +228,18 @@ After the spec is written and validated:
    ```
 
 4. **Create PR** (if user confirms):
+   
+   **Confirm before pushing:**
+   ```
+   About to push branch '<branch-name>' to origin and create a PR.
+   
+   Changes to be pushed:
+   - [list of commits/files]
+   
+   Proceed? (yes/no)
+   ```
+   
+   **If confirmed:**
    ```bash
    # Push branch to remote
    git push -u origin <branch-name>
@@ -335,6 +343,7 @@ All specifications must reference these personas (Constitution Section):
 6. **No fabricated metrics** - Only use numbers explicitly provided by user (Principle XI)
 7. **Immutable specs** - Once created, tracking happens in Jira/external systems
 8. **Technology-agnostic** - Specify WHAT and WHY, never HOW to implement (Principle IX)
+9. **Confirm before pushing** - Always confirm with user before any `git push` or PR creation
 
 ## Error Handling
 
