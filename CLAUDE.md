@@ -12,6 +12,48 @@ This file configures Claude Code sessions for the ODH Planning repository, autom
 
 When a session starts, follow this initialization flow:
 
+### Step 0: Load Repository Context
+
+**Always perform these steps at session start:**
+
+1. **Clone/verify the repository** (if not already present):
+   ```bash
+   gh repo clone danpierce1/odh-planning
+   cd odh-planning
+   ```
+
+2. **Fetch latest state**:
+   ```bash
+   git fetch origin --prune
+   ```
+
+3. **Load repository context**:
+   - Read `.specify/memory/constitution.md` (primary authority)
+   - List existing specs: `ls specs/`
+   - Check all open PRs for branch numbering:
+     ```bash
+     gh pr list --state open --json number,title,headRefName
+     ```
+
+4. **Determine next available branch number**:
+   Since new specs branch from `main`, other features may be in-flight as open PRs but not yet merged. To avoid duplicate branch numbers:
+   
+   ```bash
+   # Get highest number from:
+   # 1. Local branches
+   git branch -a | grep -oE '[0-9]{3}-' | sort -rn | head -1
+   
+   # 2. Open PRs (critical - these aren't in main yet!)
+   gh pr list --state open --json headRefName --jq '.[].headRefName' | grep -oE '^[0-9]{3}' | sort -rn | head -1
+   
+   # 3. Existing spec directories
+   ls specs/ | grep -oE '^[0-9]{3}' | sort -rn | head -1
+   ```
+   
+   **Use the highest number found across ALL sources + 1 for new branches.**
+   
+   Example: If `main` has specs up to 004, but PRs exist for 005-feature-a and 005-feature-b, the next branch should be 006.
+
 ### Step 1: Welcome and Mode Selection
 
 Begin by greeting the user and asking:
@@ -145,6 +187,8 @@ Once context is gathered, initiate the spec-kit workflow:
 3. Begin the `/speckit.specify` flow (per Constitution Principle X), which will:
    - Conduct discovery through sequential clarifying questions (ONE AT A TIME)
    - Create the feature branch **off main** using `.specify/scripts/bash/create-new-feature.sh`
+     - Pass `--number N` where N is the next available number determined in Step 0
+     - This ensures no conflicts with branches in open PRs
    - Generate the spec.md following the template and constitution guidelines
    - Validate against the spec quality checklist
 
@@ -300,6 +344,8 @@ All specifications must reference these personas (Constitution Section):
 - If strategic link is inaccessible: Fall back to manual description input
 - If PR creation fails: Check gh authentication, verify branch is pushed, suggest manual PR creation
 - If PR already exists: Display existing PR info instead of creating duplicate
+- If branch number conflict detected: Re-scan open PRs and use next available number
+- If gh CLI not authenticated: Run `gh auth login` and retry
 
 ## Session Commands
 
