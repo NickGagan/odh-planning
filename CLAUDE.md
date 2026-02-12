@@ -2,6 +2,12 @@
 
 This file configures Claude Code sessions for the ODH Planning repository, automating the spec-kit workflow for feature specification.
 
+**IMPORTANT**: Always consult the Constitution at `.specify/memory/constitution.md` for authoritative workflow guidance. The constitution defines:
+- Specification discovery process (Principle X)
+- Epic structure and organization (Principle XII)
+- Cross-team coordination requirements (Principle VIII)
+- Factual accuracy requirements (Principle XI)
+
 ## Session Initialization
 
 When a session starts, follow this initialization flow:
@@ -49,27 +55,42 @@ Please choose (1 or 2):
    ```bash
    git fetch origin
    git checkout <branch-name>
+   git pull origin <branch-name>
    ```
 
-4. Load and summarize the existing spec files:
+4. Check for existing PR on this branch:
+   ```bash
+   gh pr list --head <branch-name> --json number,title,url,state,reviewDecision
+   ```
+
+5. Load and summarize the existing spec files:
    - Read `specs/<branch-name>/spec.md`
    - Read any files in `specs/<branch-name>/checklists/`
    - Read any files in `specs/<branch-name>/contracts/`
 
-5. Present a summary:
+6. Present a summary:
    ```
    Loaded specification: [Feature Name]
-   Status: [Draft/In Review/Approved]
+   Branch: [branch-name]
+   
+   PR Status: [PR #number - title] (state: open/merged/closed)
+   URL: [pr-url]
+   Review Decision: [approved/changes_requested/pending]
+   
+   -- or if no PR exists --
+   PR Status: No PR created yet
+   
    Epics: [count]
    
    What would you like to do?
    - Update the specification
    - Run /speckit.clarify to resolve open questions
    - Run /speckit.checklist to validate requirements
+   - Create/view PR
    - Something else?
    ```
 
-6. Await user command and proceed accordingly.
+7. Await user command and proceed accordingly.
 
 ### Step 3: Gather Strategic Input (New Specs Only)
 
@@ -110,7 +131,9 @@ Do you have any additional context to provide?
 
 Once context is gathered, initiate the spec-kit workflow:
 
-1. Summarize the collected input:
+1. **Load the Constitution**: Read `.specify/memory/constitution.md` to ensure adherence to all principles
+
+2. Summarize the collected input:
    ```
    Ready to create specification with:
    - Strategic Input: [link/description summary]
@@ -119,20 +142,120 @@ Once context is gathered, initiate the spec-kit workflow:
    Starting specification discovery...
    ```
 
-2. Begin the `/speckit.specify` flow, which will:
-   - Conduct discovery through sequential clarifying questions (per Constitution Principle X)
-   - Create the feature branch using `.specify/scripts/bash/create-new-feature.sh`
+3. Begin the `/speckit.specify` flow (per Constitution Principle X), which will:
+   - Conduct discovery through sequential clarifying questions (ONE AT A TIME)
+   - Create the feature branch **off main** using `.specify/scripts/bash/create-new-feature.sh`
    - Generate the spec.md following the template and constitution guidelines
    - Validate against the spec quality checklist
 
+4. After specification is complete, **automatically proceed to clarify**:
+   - Run `/speckit.clarify` to resolve any [NEEDS CLARIFICATION] markers
+   - Continue clarification until all markers are resolved
+   - Re-validate the spec after clarifications are incorporated
+
+5. Once clarification is complete, proceed to [Step 5: Verification and PR](#step-5-verification-and-pr)
+
+### Step 5: Verification and PR
+
+After the spec is written and validated:
+
+1. **Verify with User**:
+   ```
+   Specification complete! Please review the generated spec.md.
+   
+   Summary:
+   - Branch: [branch-name]
+   - Spec: specs/[branch-name]/spec.md
+   - Epics: [count with priorities]
+   - Cross-team dependencies: [list teams]
+   - Potential spikes: [count]
+   
+   Does this specification look correct? (yes/no/needs changes)
+   ```
+
+2. **If changes needed**: Make requested updates and re-verify
+
+3. **If verified**: Prompt for PR creation:
+   ```
+   Ready to open a Pull Request for review?
+   
+   This will:
+   - Push the branch to origin
+   - Create a PR targeting main
+   - Add spec summary to PR description
+   
+   Create PR? (yes/no)
+   ```
+
+4. **Create PR** (if user confirms):
+   ```bash
+   # Push branch to remote
+   git push -u origin <branch-name>
+   
+   # Create PR with spec summary
+   gh pr create \
+     --base main \
+     --head <branch-name> \
+     --title "Spec: [Feature Name]" \
+     --body "$(cat <<'EOF'
+   ## Specification: [Feature Name]
+   
+   **Branch**: `[branch-name]`
+   **Strategic Input**: [link if provided]
+   
+   ### Summary
+   [Brief description from spec]
+   
+   ### Epics
+   - [ ] Epic 1: [name] (P1)
+   - [ ] Epic 2: [name] (P1)
+   - [ ] Epic 3: [name] (P2)
+   
+   ### Cross-Team Dependencies
+   | Team | Requirement | Type |
+   |------|-------------|------|
+   | [team] | [requirement] | [type] |
+   
+   ### Review Checklist
+   - [ ] Spec follows constitution guidelines
+   - [ ] All [NEEDS CLARIFICATION] markers resolved
+   - [ ] Cross-team dependencies identified
+   - [ ] Potential spikes documented
+   - [ ] Personas and user value clearly defined
+   
+   EOF
+   )"
+   ```
+
+5. **Report PR creation**:
+   ```
+   PR created successfully!
+   
+   PR #[number]: [title]
+   URL: [pr-url]
+   
+   Next steps:
+   - Share PR with stakeholders for review
+   - Address any review feedback
+   - Once approved, spec is ready for refinement
+   ```
+
 ## Key References
 
-### Constitution Location
-- `.specify/memory/constitution.md` - Crimson Dashboard Constitution (v3.0.0)
+### Constitution (Primary Authority)
+**Always consult**: `.specify/memory/constitution.md` - Crimson Dashboard Constitution (v3.0.0)
 
-### Spec-Kit Commands
+The constitution is the authoritative source for:
+- Workflow principles and processes
+- Specification discovery requirements (Principle X)
+- Epic structure and user story format (Principle XII)
+- Cross-team dependency identification (Principle VIII)
+- Factual accuracy requirements - no fabricated metrics (Principle XI)
+- Codebase-informed architecture guidance (Principle XIII)
+
+### Spec-Kit Commands (defined in `.cursor/commands/`)
 - `/speckit.specify` - Create new specification from description
-- `/speckit.clarify` - Resolve [NEEDS CLARIFICATION] markers
+- `/speckit.clarify` - Resolve [NEEDS CLARIFICATION] markers (run after specify)
 - `/speckit.checklist` - Validate specification completeness
 - `/speckit.plan` - (Not used in current workflow - spec.md is terminal artifact)
 
@@ -158,12 +281,16 @@ All specifications must reference these personas (Constitution Section):
 
 ## Workflow Principles
 
-1. **Spec.md is the terminal artifact** - No separate planning or task generation phase
-2. **Sequential discovery** - Ask clarifying questions ONE AT A TIME
-3. **Cross-team dependencies** - Identify early using OWNERS reference
-4. **Spike identification** - Flag areas of uncertainty for time-boxed research
-5. **Immutable specs** - Once created, tracking happens in Jira/external systems
-6. **Technology-agnostic** - Specify WHAT and WHY, never HOW to implement
+**Always defer to the Constitution** - These principles are summaries; the constitution is authoritative.
+
+1. **Spec.md is the terminal artifact** - No separate planning or task generation phase (Principle IX)
+2. **Sequential discovery** - Ask clarifying questions ONE AT A TIME (Principle X)
+3. **Specify → Clarify → Verify → PR** - Complete each phase before proceeding
+4. **Cross-team dependencies** - Identify early using OWNERS reference (Principle VIII)
+5. **Spike identification** - Flag areas of uncertainty for time-boxed research (Principle X)
+6. **No fabricated metrics** - Only use numbers explicitly provided by user (Principle XI)
+7. **Immutable specs** - Once created, tracking happens in Jira/external systems
+8. **Technology-agnostic** - Specify WHAT and WHY, never HOW to implement (Principle IX)
 
 ## Error Handling
 
@@ -171,11 +298,14 @@ All specifications must reference these personas (Constitution Section):
 - If spec file is missing: Offer to initialize from template
 - If git operations fail: Check remote connectivity, suggest manual steps
 - If strategic link is inaccessible: Fall back to manual description input
+- If PR creation fails: Check gh authentication, verify branch is pushed, suggest manual PR creation
+- If PR already exists: Display existing PR info instead of creating duplicate
 
 ## Session Commands
 
 The user may use these commands at any time:
-- `status` - Show current branch and spec summary
+- `status` - Show current branch, spec summary, and PR status
+- `pr` - View existing PR or create new one for current branch
 - `constitution` - Display relevant constitution principles
 - `teams` - Show team ownership reference
 - `personas` - Display target persona summaries
