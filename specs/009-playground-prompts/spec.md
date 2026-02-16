@@ -10,40 +10,50 @@
 - **Prototype**: https://andybraren.github.io/rhoai-integration-prototype/gen-ai-studio/playground
 - **Figma**: https://www.figma.com/design/0KwA2EuFmA48GAQAOyjbIb/3.4-Playground?node-id=440-3247&t=aCrLHQvSQ2iGGXat-0
 
+### User Flow Summary (from Figma)
+
+The Prompt tab provides two entry paths for working with managed prompts:
+
+**Path A: Draft → Save (Top row)**
+1. User drafts a prompt directly in the Instructions text field
+2. When ready, user opens Save Prompt modal
+3. Modal requires: prompt name, prompt type (text or chat)
+4. Prompt field auto-populates with drafted content
+5. For chat type, the drafted prompt becomes the system prompt
+
+**Path B: Load → Edit → Save (Middle row)**
+1. User clicks "Load Prompt" to open modal
+2. User browses/searches prompts in namespace registry
+3. Sidebar shows prompt preview with version selector
+4. Loaded prompt displays with provenance indicator and "Clear" option
+5. System instructions load as read-only by default
+6. User clicks "Edit prompt" to enable editing
+7. Modified prompts show "Unsaved changes" indicator
+8. User saves changes (new version or new prompt)
+
+**Path C: Example Prompts Flow (Bottom row)**
+1. User clicks to view example prompts from global registry
+2. User can preview prompt details before loading
+3. Example prompt loads as read-only (can query model immediately)
+4. User enters edit mode to modify
+5. User saves edited prompt to namespace registry
+
+### Open Design Questions (from Figma)
+
+- Should example prompts have a dedicated tab in the load modal? (Pending: dedicated tab vs mixed list with filter)
+
 ## Epics *(mandatory)*
 
 ### Epic 1: Load Prompt Modal (Priority: P1, Owner: Dashboard/gen-ai)
 
-Implement a "Load Prompt" modal accessible from the existing prompt area in Playground, allowing users to browse and load prompts from the Prompt Registry or Example Prompts.
+Implement a "Load Prompt" modal accessible from the existing prompt area in Playground, allowing users to browse, preview, and load prompts from the Prompt Registry or Example Prompts with version selection.
 
-**User Value**: Users can discover and load governed prompts directly within Playground, eliminating manual copy/paste and maintaining version awareness.
+**User Value**: Users can discover and load governed prompts directly within Playground, eliminating manual copy/paste, maintaining version awareness, and enabling reproducible experimentation.
 
 **Technical Considerations**:
 - Modal opens via "Load Prompt" button in existing prompt area
 - Must support browsing both Prompt Registry (versioned) and Example Prompts (non-versioned)
 - Sidebar within modal shows prompt details and version selector when a prompt is selected
-
-**Outcomes by Persona**:
-
-_AI Engineer_:
-- Click "Load Prompt" to open prompt selection modal
-- Browse prompts from Prompt Registry and Example Prompts
-- Select a prompt to view details in sidebar (name, description, version history)
-- Choose specific version from dropdown before loading
-
-_Data Scientist_:
-- Quickly find relevant prompts by browsing available options
-- Understand prompt purpose from metadata before loading
-
----
-
-### Epic 2: Version Selection (Priority: P1, Owner: Dashboard/gen-ai)
-
-Enable version selection when loading prompts from the Prompt Registry, allowing users to work with specific versions of governed prompts.
-
-**User Value**: Users can select and work with specific prompt versions, enabling reproducible experimentation and safe rollback to known-good versions.
-
-**Technical Considerations**:
 - Version dropdown appears in sidebar when registry prompt is selected
 - Default to latest version, allow selection of older versions
 - Example prompts have no version selector (non-versioned)
@@ -51,10 +61,17 @@ Enable version selection when loading prompts from the Prompt Registry, allowing
 **Outcomes by Persona**:
 
 _AI Engineer_:
-- See version dropdown in prompt details sidebar
+- Click "Load Prompt" to open prompt selection modal
+- Browse prompts from Prompt Registry and Example Prompts
+- Select a prompt to view details in sidebar (name, description, version history)
+- See version dropdown in prompt details sidebar for registry prompts
 - View version number and timestamp for each version
 - Switch between versions before clicking "Load Prompt"
 - Load older version if latest has issues
+
+_Data Scientist_:
+- Quickly find relevant prompts by browsing available options
+- Understand prompt purpose from metadata before loading
 
 _ML Ops Engineer_:
 - Reproduce experiments with specific prompt versions
@@ -62,32 +79,40 @@ _ML Ops Engineer_:
 
 ---
 
-### Epic 3: Prompt Editing with Unsaved State (Priority: P1, Owner: Dashboard/gen-ai)
+### Epic 2: Prompt State & Editing (Priority: P1, Owner: Dashboard/gen-ai)
 
-Allow users to edit registry prompts within Playground, with clear visual indication of unsaved changes and no implicit autosave. Sample/starter prompts are read-only and cannot be edited.
+Manage prompt state in Playground including provenance display, edit mode, unsaved change tracking, and clearing loaded prompts. Example prompts are read-only and cannot be edited.
 
-**User Value**: Users can experiment with registry prompt modifications safely, knowing changes won't affect the saved version until explicitly saved. Example prompts serve as read-only templates that can be used as-is or saved as new prompts.
+**User Value**: Users always know the source and state of their current prompt, can safely experiment with modifications without affecting saved versions, and can clear prompts to start fresh.
 
 **Technical Considerations**:
-- Editable prompt area within Playground for registry prompts only
-- Sample/starter prompts are read-only (no editing capability)
+- Provenance indicator visible in prompt area showing source and version
+- "Edit prompt" button to enter edit mode for registry prompts
+- Example prompts are read-only (no editing capability)
 - Clear visual state for "Modified" / "Unsaved changes" on editable prompts
 - No autosave behavior; all saves are explicit
 - Inline warning near "Load Prompt" button when unsaved changes exist
+- "Clear" action to unload current prompt and return to blank state
 
 **Outcomes by Persona**:
 
 _AI Engineer_:
+- See provenance indicator showing prompt source (Registry, Example, Local)
+- See version number for registry prompts
+- Click "Edit prompt" to enter edit mode for registry prompts
 - Edit loaded registry prompts freely within Playground
 - See clear "Unsaved changes" indicator when modifications exist
 - See warning message near "Load Prompt" when attempting to load different prompt with unsaved changes
+- Click "Clear" to unload current prompt and start fresh
 - Understand that example prompts are read-only templates
 - Understand that changes are not automatically saved
 
 _Data Scientist_:
+- Understand governance status at a glance
 - Experiment with registry prompt variations without affecting saved versions
 - Use example prompts as-is for quick experimentation
 - Clearly distinguish between original and modified prompt state
+- Clear prompt to start over with a blank slate
 
 **Editability by Prompt Source**:
 | Prompt Source | Editable | Notes |
@@ -96,7 +121,7 @@ _Data Scientist_:
 | Example prompt | ❌ No | Read-only; can only save as new prompt |
 | Local/new | ✅ Yes | Editable until saved |
 
-**Visual States** (for editable prompts):
+**Visual States**:
 | State | Indicator |
 |-------|-----------|
 | Clean (unchanged) | No indicator |
@@ -104,16 +129,29 @@ _Data Scientist_:
 | Loading different prompt | Inline warning: "Loading prompt will overwrite current prompt" |
 | Example prompt loaded | "Read-only" indicator |
 
+**Provenance Indicators**:
+| Source | Display |
+|--------|---------|
+| Registry prompt | "From Registry: [name] v[version]" |
+| Example prompt | "Example: [name]" |
+| Local/unsaved | "Unsaved prompt" |
+
+**Actions**:
+| Action | Availability | Behavior |
+|--------|--------------|----------|
+| Edit prompt | Registry prompts only | Enters edit mode |
+| Clear | Any loaded prompt | Unloads prompt, returns to blank state |
+
 ---
 
-### Epic 4: Save Prompt (Priority: P1, Owner: Dashboard/gen-ai)
+### Epic 3: Save Prompt (Priority: P1, Owner: Dashboard/gen-ai)
 
 Enable users to save prompts from Playground, supporting save as new version (for registry prompts), save as new prompt (fork), and save new prompt (from scratch).
 
 **User Value**: Users can persist their prompt work from Playground to the Prompt Registry, creating new versions or new prompts as appropriate.
 
 **Technical Considerations**:
-- Save options depend on prompt provenance (registry, sample, local/new)
+- Save options depend on prompt provenance (registry, example, local/new)
 - Registry prompts can save as new version or fork as new prompt
 - Example prompts can only be saved as new prompt (no versioning)
 - New/unsaved prompts save as new prompt
@@ -133,14 +171,19 @@ _ML Ops Engineer_:
 | Prompt Source | Save as New Version | Save as New Prompt |
 |---------------|---------------------|-------------------|
 | Registry prompt | ✅ Yes | ✅ Yes (fork) |
-| Example prompt | ❌ No | ✅ Yes |
+| Example prompt | ❌ No | ✅ Yes (blank name required) |
 | Local/new | ❌ No | ✅ Yes |
+
+**Save Modal Behavior**:
+- When saving an example prompt as new: name field is blank (user must provide new name)
+- When forking a registry prompt: name field may pre-populate with original name
+- Prompt content auto-populates from current playground state
 
 > **Dependency**: Razzmatazz team (RHAISTRAT-150) must provide save/version APIs.
 
 ---
 
-### Epic 5: Revert Unsaved Changes (Priority: P1, Owner: Dashboard/gen-ai)
+### Epic 4: Revert Unsaved Changes (Priority: P1, Owner: Dashboard/gen-ai)
 
 Allow users to revert their edits back to the last loaded version, discarding unsaved changes without affecting registry content.
 
@@ -164,33 +207,6 @@ _Data Scientist_:
 
 ---
 
-### Epic 6: Prompt Provenance Display (Priority: P1, Owner: Dashboard/gen-ai)
-
-Display clear provenance information for the current prompt, helping users understand the source and governance status of the prompt they're working with.
-
-**User Value**: Users always know whether they're working with a governed registry prompt, a example prompt, or an unsaved local prompt, informing their save and sharing decisions.
-
-**Technical Considerations**:
-- Provenance indicator visible in prompt area
-- Shows source type and version (if applicable)
-- Updates when prompt is loaded or saved
-
-**Outcomes by Persona**:
-
-_AI Engineer_:
-- See provenance indicator showing prompt source (Registry, Sample, Local)
-- See version number for registry prompts
-- Understand governance status at a glance
-
-**Provenance Indicators**:
-| Source | Display |
-|--------|---------|
-| Registry prompt | "From Registry: [name] v[version]" |
-| Example prompt | "Example: [name]" |
-| Local/unsaved | "Unsaved prompt" |
-
----
-
 ### Edge Cases
 
 - What happens when Prompt Registry API is unavailable? Show error state in modal; allow continued editing of current prompt; disable save to registry.
@@ -200,6 +216,7 @@ _AI Engineer_:
 - What happens when loading an MLFlow prompt with user/assistant roles? User and assistant rows are displayed as read-only; only the system prompt is editable.
 - What happens if registry save fails mid-operation? Show error message; preserve local state; allow retry.
 - What happens with very long prompts? Prompt area should scroll; consider character limit warnings if registry has limits.
+- What happens when user clicks "Clear"? Prompt is unloaded, provenance indicator removed, prompt area returns to blank state.
 
 ## Potential Spikes
 
@@ -218,6 +235,7 @@ _AI Engineer_:
 
 ## System Constraints
 
+- Prompts are model-agnostic; model configuration is set separately in playground (not stored with prompt)
 - No autosave; all saves are explicit user actions — all edits create new versions
 - Example prompts are read-only and cannot be edited (can only be saved as new prompt)
 - Example prompts cannot be versioned (only forked as new prompt)
@@ -248,8 +266,9 @@ _AI Engineer_:
 - **SC-005**: Users can save edits as new version (registry prompts) or new prompt
 - **SC-006**: Example prompts cannot be versioned (only saved as new prompt)
 - **SC-007**: Users can revert unsaved edits back to loaded version
-- **SC-008**: Prompt provenance is clearly visible (Registry, Sample, Local)
+- **SC-008**: Prompt provenance is clearly visible (Registry, Example, Local)
 - **SC-009**: Unsaved changes are clearly indicated with "Modified" state
+- **SC-010**: Users can clear loaded prompt to return to blank state
 
 ## Cross-Team Dependencies
 
@@ -290,6 +309,15 @@ When a user saves a new prompt or new version from Playground, where does it go?
 5. Other
 
 ## Clarifications
+
+### Session 2026-02-16
+
+- Q: What is the canonical term for non-versioned template prompts (starter/global/example)? → A: "Example prompts"
+- Q: Are example prompts in scope for 3.4? → A: Yes, in scope — browsable and loadable in load modal
+- Q: Should example prompts have dedicated tab or mixed list in load modal? → A: Pending UX decision (dedicated tab vs mixed list with filter)
+- Q: Should save modal include model configuration? → A: No — prompts are model-agnostic; model set separately in playground
+- Q: When saving an example prompt, should name pre-populate? → A: No — blank name; user must provide new name
+- Q: Are epics still valid after Figma review? → A: Consolidated from 6 to 4 epics; added "Clear" action to Epic 2
 
 ### Design Refinement Session 2026-02-11
 
