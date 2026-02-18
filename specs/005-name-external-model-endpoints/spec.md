@@ -163,6 +163,9 @@ _Platform Engineer_:
 | **UX Team** | Design for minimal registration wizard with required fields (Model ID text, URL, API Key, optional Model Alias, "Verify Model" button, and potentially Serving Runtime - pending clarification) | Design | Blocking for Epic 1 MVP |
 | **UX Team** | Design for visual distinction between external and internal models (icon, badge, filter, etc.) | Design | Blocking for Epic 2 |
 | **UX Team** | (TBD) Design for scoping mismatch scenario: What UI/error shows when User B tries to use endpoint registered by User A if secrets are user-scoped? | Design | Blocking for Epic 2 & 3 if scoping mismatch exists |
+| **Playground Team (gen-ai)** | BFF and UI implementation for external model registration, display, and playground integration | Integration | |
+| **Documentation Team** | Document feature flag configuration for admins, user registration workflow, and security best practices for external model connections | Documentation | Needed for Epic 1 - admin guide, user guide, security guidance |
+| **QE Team** | E2E test scenarios for external model registration, management, playground integration, and scoping/access control | Testing | Needed for Epic 1, 2, 3 - comprehensive testing coverage |
 
 ---
 
