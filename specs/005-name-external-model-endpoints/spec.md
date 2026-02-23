@@ -7,7 +7,7 @@
 
 ## Overview
 
-Enable users to register and utilize external model endpoints directly within the AI Available Assets page in Gen AI Studio. Two connection options are supported: (1) **External third-party providers** (e.g., Anthropic, OpenAI, AWS, Gemini)—users provide the provider’s URL and API key for authentication; (2) **Models in another namespace**—users connect to a model deployed elsewhere in the cluster using the internal API (e.g. URL pattern `svc.cluster.local`) and an authorized token, keeping traffic in-cluster. This extends the current capability beyond namespace-hosted LLS servers to include both in-cluster cross-namespace models and, when allowed by the platform, arbitrary external endpoints hosting OpenAI-compliant APIs.
+Enable users to register and utilize external model endpoints directly within the AI Available Assets page in Gen AI Studio. Two connection options are supported: (1) **Models in another namespace**—users connect to a model deployed elsewhere in the cluster using the internal API (e.g. URL pattern `svc.cluster.local`) and an authorized token, keeping traffic in-cluster; (2) **External third-party providers** (e.g., Anthropic, OpenAI, AWS, Gemini)—users provide the provider’s URL and API key for authentication. This extends the current capability beyond namespace-hosted LLS servers to include both in-cluster cross-namespace models and, when allowed by the platform, arbitrary external endpoints hosting OpenAI-compliant APIs.
 
 **Scope**: External endpoints will be visible in the AI Available Assets Models page and selectable in the AI Playground for inference.
 
